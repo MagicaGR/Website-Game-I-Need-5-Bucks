@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const scratchOverlay = document.getElementById('scratch-overlay');
     const resetBtn = document.getElementById('reset-btn');
     const prizeAmount = document.getElementById('prize-amount');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
     
     // Possible prize amounts
     const prizes = ['$1', '$2', '$5', '$10', '$20', '$50', '$100'];
@@ -13,6 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let isDrawing = false;
     let lastX = 0;
     let lastY = 0;
+    let scratchedArea = 0;
+    let totalArea = 0;
+    let isRevealed = false;
     
     // Create canvas context for scratching
     const canvas = document.createElement('canvas');
@@ -38,6 +43,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const dataURL = canvas.toDataURL();
     scratchOverlay.style.backgroundImage = `url(${dataURL})`;
     
+    // Calculate total area
+    totalArea = canvas.width * canvas.height;
+    
     // Event listeners for scratching
     scratchOverlay.addEventListener('mousedown', startDrawing);
     scratchOverlay.addEventListener('mousemove', draw);
@@ -56,10 +64,35 @@ document.addEventListener('DOMContentLoaded', function() {
         // Reset the scratch overlay
         scratchOverlay.style.background = '#3498db';
         scratchOverlay.style.clipPath = 'none';
+        scratchedArea = 0;
+        isRevealed = false;
+        updateProgress(0);
         
         // Set a random prize
         const randomPrize = prizes[Math.floor(Math.random() * prizes.length)];
         prizeAmount.textContent = randomPrize;
+    }
+    
+    function updateProgress(percentage) {
+        progressBar.style.width = `${percentage}%`;
+        if (percentage < 30) {
+            progressText.textContent = "Keep scratching! You're almost there!";
+        } else if (percentage < 60) {
+            progressText.textContent = "Great job! Keep going!";
+        } else if (percentage < 90) {
+            progressText.textContent = "Almost there! Just a bit more!";
+        } else {
+            progressText.textContent = "Congratulations! You've revealed your prize!";
+            if (!isRevealed) {
+                isRevealed = true;
+                // Add some celebration effects
+                scratchOverlay.style.transition = 'opacity 0.5s ease';
+                scratchOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    scratchOverlay.style.display = 'none';
+                }, 500);
+            }
+        }
     }
     
     function startDrawing(e) {
@@ -83,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create a scratched effect using clip-path
         const x = e.offsetX;
         const y = e.offsetY;
-        const radius = 20;
+        const radius = 15; // Smaller radius for more precise scratching
         
         // Add to the clip path
         const currentClipPath = scratchOverlay.style.clipPath || '';
@@ -96,6 +129,11 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             scratchOverlay.style.clipPath = newCircle;
         }
+        
+        // Calculate scratched area
+        scratchedArea += Math.PI * radius * radius;
+        const percentage = Math.min(100, Math.round((scratchedArea / totalArea) * 100));
+        updateProgress(percentage);
         
         lastX = x;
         lastY = y;
@@ -108,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const rect = scratchOverlay.getBoundingClientRect();
         const x = touch.clientX - rect.left;
         const y = touch.clientY - rect.top;
-        const radius = 20;
+        const radius = 15; // Smaller radius for more precise scratching
         
         // Add to the clip path
         const currentClipPath = scratchOverlay.style.clipPath || '';
@@ -121,6 +159,11 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             scratchOverlay.style.clipPath = newCircle;
         }
+        
+        // Calculate scratched area
+        scratchedArea += Math.PI * radius * radius;
+        const percentage = Math.min(100, Math.round((scratchedArea / totalArea) * 100));
+        updateProgress(percentage);
         
         lastX = x;
         lastY = y;

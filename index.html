@@ -11,18 +11,22 @@
     <div class="container">
         <header>
             <h1>I Need 5 Bucks</h1>
-            <p class="tagline">Scratch the card below to win money!</p>
+            <p class="tagline">Scratch the card to reveal your prize! 🎉</p>
         </header>
         
         <main>
             <div class="scratch-card-container">
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                    <div class="progress-text" id="progress-text">Scratch more to reveal your prize!</div>
+                </div>
                 <div class="scratch-card">
                     <div class="scratch-overlay" id="scratch-overlay"></div>
                     <div class="prize-area">
                         <span id="prize-amount">$5</span>
                     </div>
                 </div>
-                <button id="reset-btn">New Card</button>
+                <button id="reset-btn">Try Again! 🎮</button>
             </div>
         </main>
 
