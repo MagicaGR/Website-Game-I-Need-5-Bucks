@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         function scratchAtPoint(x, y) {
-            const scratchRadius = 20;
+            const scratchRadius = 25;
             
             // Create scratch effect
             ctx.beginPath();
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.fill();
             
             // Add scratch marks
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 8; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const distance = Math.random() * scratchRadius;
                 const tx = x + Math.cos(angle) * distance;
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 ctx.moveTo(x, y);
                 ctx.lineTo(tx, ty);
                 ctx.strokeStyle = 'transparent';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 4;
                 ctx.globalCompositeOperation = 'destination-out';
                 ctx.stroke();
             }
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Draw circles along the path
             const distance = Math.sqrt(Math.pow(x - lastX, 2) + Math.pow(y - lastY, 2));
-            const steps = Math.ceil(distance / 5);
+            const steps = Math.ceil(distance / 3);
             
             for (let i = 0; i <= steps; i++) {
                 const t = i / steps;
@@ -165,15 +165,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Event listeners for scratching
-        canvas.addEventListener('mousedown', startDrawing, { passive: false });
-        canvas.addEventListener('mousemove', draw, { passive: false });
-        canvas.addEventListener('mouseup', stopDrawing, { passive: false });
-        canvas.addEventListener('mouseleave', stopDrawing, { passive: false });
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
         
         // Touch events for mobile
-        canvas.addEventListener('touchstart', startDrawing, { passive: false });
-        canvas.addEventListener('touchmove', draw, { passive: false });
-        canvas.addEventListener('touchend', stopDrawing, { passive: false });
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
         
         // Initialize on load
         setCanvasSize();
