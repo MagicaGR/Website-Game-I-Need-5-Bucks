@@ -72,19 +72,38 @@ h1 {
     left: 0;
     width: 100%;
     height: 100%;
-    cursor: pointer;
-    z-index: 10;
+    cursor: crosshair;
+    z-index: 2;
     touch-action: none;
-    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+}
+
+.scratch-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        45deg,
+        #3498db,
+        #3498db 10px,
+        #2980b9 10px,
+        #2980b9 20px
+    );
+    z-index: 1;
 }
 
 .prize-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
     background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+    z-index: 0;
 }
 
 #prize-amount {

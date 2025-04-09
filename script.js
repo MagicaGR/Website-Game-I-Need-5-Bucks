@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let scratchedArea = 0;
     let totalArea = 0;
     let isRevealed = false;
+    let scratchPattern = [];
     
     // Get canvas context
     const ctx = scratchOverlay.getContext('2d');
@@ -22,7 +23,25 @@ document.addEventListener('DOMContentLoaded', function() {
         scratchOverlay.width = rect.width;
         scratchOverlay.height = rect.height;
         totalArea = scratchOverlay.width * scratchOverlay.height;
-        initScratchCard(); // Reinitialize when size changes
+        initScratchCard();
+    }
+    
+    // Create scratch pattern
+    function createScratchPattern() {
+        scratchPattern = [];
+        const patternSize = 20;
+        const rows = Math.ceil(scratchOverlay.height / patternSize);
+        const cols = Math.ceil(scratchOverlay.width / patternSize);
+        
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                scratchPattern.push({
+                    x: j * patternSize,
+                    y: i * patternSize,
+                    scratched: false
+                });
+            }
+        }
     }
     
     // Initialize the scratch card
@@ -39,17 +58,18 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear the canvas
         ctx.clearRect(0, 0, scratchOverlay.width, scratchOverlay.height);
         
-        // Fill the canvas with a color
-        ctx.fillStyle = '#3498db';
+        // Create new scratch pattern
+        createScratchPattern();
+        
+        // Fill the canvas with a semi-transparent white
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
         ctx.fillRect(0, 0, scratchOverlay.width, scratchOverlay.height);
         
-        // Add some text or pattern to make it look like a scratch card
-        ctx.font = 'bold 20px Arial';
-        ctx.fillStyle = '#2980b9';
-        ctx.textAlign = 'center';
-        for (let i = 0; i < 8; i++) {
-            for (let j = 0; j < 4; j++) {
-                ctx.fillText('SCRATCH!', 40 + i * 40, 40 + j * 40);
+        // Add scratch texture
+        ctx.fillStyle = '#3498db';
+        for (const pattern of scratchPattern) {
+            if (!pattern.scratched) {
+                ctx.fillRect(pattern.x, pattern.y, 20, 20);
             }
         }
         
@@ -69,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function() {
             progressText.textContent = "Congratulations! You've revealed your prize!";
             if (!isRevealed) {
                 isRevealed = true;
-                // Add some celebration effects
                 scratchOverlay.style.transition = 'opacity 0.5s ease';
                 scratchOverlay.style.opacity = '0';
                 setTimeout(() => {
@@ -98,40 +117,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function startDrawing(e) {
-        e.preventDefault();
-        isDrawing = true;
-        const coords = getCoordinates(e);
-        lastX = coords.x;
-        lastY = coords.y;
+    function scratchAtPoint(x, y) {
+        const scratchRadius = 15;
+        const scratchIntensity = 0.7;
         
-        // Draw initial circle
-        drawCircle(lastX, lastY);
-    }
-    
-    function drawCircle(x, y) {
-        const radius = 15;
+        // Create scratch effect
         ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'transparent';
+        ctx.arc(x, y, scratchRadius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${scratchIntensity})`;
         ctx.globalCompositeOperation = 'destination-out';
         ctx.fill();
         
-        // Add some texture to make it look more like scratching
-        for (let i = 0; i < 5; i++) {
+        // Add scratch marks
+        for (let i = 0; i < 3; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const distance = Math.random() * radius;
+            const distance = Math.random() * scratchRadius;
             const tx = x + Math.cos(angle) * distance;
             const ty = y + Math.sin(angle) * distance;
             
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(tx, ty);
-            ctx.strokeStyle = 'transparent';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
             ctx.lineWidth = 2;
             ctx.globalCompositeOperation = 'destination-out';
             ctx.stroke();
         }
+        
+        // Update scratched area
+        scratchedArea += Math.PI * scratchRadius * scratchRadius;
+        const percentage = Math.min(100, Math.round((scratchedArea / totalArea) * 100));
+        updateProgress(percentage);
+    }
+    
+    function startDrawing(e) {
+        e.preventDefault();
+        isDrawing = true;
+        const coords = getCoordinates(e);
+        lastX = coords.x;
+        lastY = coords.y;
+        scratchAtPoint(lastX, lastY);
     }
     
     function draw(e) {
@@ -150,13 +175,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const t = i / steps;
             const currentX = lastX + (x - lastX) * t;
             const currentY = lastY + (y - lastY) * t;
-            drawCircle(currentX, currentY);
+            scratchAtPoint(currentX, currentY);
         }
-        
-        // Calculate scratched area
-        scratchedArea += Math.PI * 15 * 15 * steps;
-        const percentage = Math.min(100, Math.round((scratchedArea / totalArea) * 100));
-        updateProgress(percentage);
         
         lastX = x;
         lastY = y;
