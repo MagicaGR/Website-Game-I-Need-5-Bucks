@@ -1,211 +1,231 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const scratchOverlay = document.getElementById('scratch-overlay');
+    // Game symbols
+    const symbols = ['🍎', '🍊', '🍇', '🍒', '🍋', '🍉'];
+    const cards = document.querySelectorAll('.card');
+    const prizeAmount = document.querySelector('.prize-amount');
     const resetBtn = document.getElementById('reset-btn');
-    const prizeAmount = document.getElementById('prize-amount');
-    const progressBar = document.getElementById('progress-bar');
-    const progressText = document.getElementById('progress-text');
     
-    // Initialize variables
-    let isDrawing = false;
-    let lastX = 0;
-    let lastY = 0;
-    let scratchedArea = 0;
-    let totalArea = 0;
-    let isRevealed = false;
-    let scratchPattern = [];
+    // Game state
+    let revealedSymbols = [];
+    let isGameComplete = false;
     
-    // Get canvas context
-    const ctx = scratchOverlay.getContext('2d');
-    
-    // Set canvas size
-    function setCanvasSize() {
-        const rect = scratchOverlay.getBoundingClientRect();
-        scratchOverlay.width = rect.width;
-        scratchOverlay.height = rect.height;
-        totalArea = scratchOverlay.width * scratchOverlay.height;
-        initScratchCard();
-    }
-    
-    // Create scratch pattern
-    function createScratchPattern() {
-        scratchPattern = [];
-        const patternSize = 20;
-        const rows = Math.ceil(scratchOverlay.height / patternSize);
-        const cols = Math.ceil(scratchOverlay.width / patternSize);
+    // Initialize each card
+    cards.forEach((card, index) => {
+        const canvas = card.querySelector('.scratch-overlay');
+        const symbol = card.querySelector('.symbol');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let scratchedArea = 0;
+        let totalArea = 0;
+        let isRevealed = false;
         
-        for (let i = 0; i < rows; i++) {
-            for (let j = 0; j < cols; j++) {
-                scratchPattern.push({
-                    x: j * patternSize,
-                    y: i * patternSize,
-                    scratched: false
-                });
-            }
+        // Set canvas size
+        function setCanvasSize() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            totalArea = canvas.width * canvas.height;
+            initScratchCard();
         }
-    }
-    
-    // Initialize the scratch card
-    function initScratchCard() {
-        // Reset the scratch overlay
-        scratchedArea = 0;
-        isRevealed = false;
-        updateProgress(0);
         
-        // Reset canvas display
-        scratchOverlay.style.display = 'block';
-        scratchOverlay.style.opacity = '1';
-        
-        // Clear the canvas
-        ctx.clearRect(0, 0, scratchOverlay.width, scratchOverlay.height);
-        
-        // Create new scratch pattern
-        createScratchPattern();
-        
-        // Fill the canvas with a semi-transparent white
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.fillRect(0, 0, scratchOverlay.width, scratchOverlay.height);
-        
-        // Add scratch texture
-        ctx.fillStyle = '#3498db';
-        for (const pattern of scratchPattern) {
-            if (!pattern.scratched) {
-                ctx.fillRect(pattern.x, pattern.y, 20, 20);
+        // Initialize the scratch card
+        function initScratchCard() {
+            // Reset the scratch overlay
+            scratchedArea = 0;
+            isRevealed = false;
+            
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Fill the canvas with a semi-transparent white
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Add scratch texture
+            ctx.fillStyle = '#3498db';
+            for (let i = 0; i < canvas.width; i += 20) {
+                for (let j = 0; j < canvas.height; j += 20) {
+                    ctx.fillRect(i, j, 10, 10);
+                }
             }
         }
         
-        // Always set prize to $5
-        prizeAmount.textContent = '$5';
-    }
-    
-    function updateProgress(percentage) {
-        progressBar.style.width = `${percentage}%`;
-        if (percentage < 30) {
-            progressText.textContent = "Keep scratching! You're almost there!";
-        } else if (percentage < 60) {
-            progressText.textContent = "Great job! Keep going!";
-        } else if (percentage < 90) {
-            progressText.textContent = "Almost there! Just a bit more!";
-        } else {
-            progressText.textContent = "Congratulations! You've revealed your prize!";
-            if (!isRevealed) {
+        function getCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            if (e.type.includes('touch')) {
+                const touch = e.touches[0];
+                return {
+                    x: (touch.clientX - rect.left) * scaleX,
+                    y: (touch.clientY - rect.top) * scaleY
+                };
+            } else {
+                return {
+                    x: (e.clientX - rect.left) * scaleX,
+                    y: (e.clientY - rect.top) * scaleY
+                };
+            }
+        }
+        
+        function scratchAtPoint(x, y) {
+            const scratchRadius = 15;
+            const scratchIntensity = 0.7;
+            
+            // Create scratch effect
+            ctx.beginPath();
+            ctx.arc(x, y, scratchRadius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${scratchIntensity})`;
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fill();
+            
+            // Add scratch marks
+            for (let i = 0; i < 3; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * scratchRadius;
+                const tx = x + Math.cos(angle) * distance;
+                const ty = y + Math.sin(angle) * distance;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(tx, ty);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.lineWidth = 2;
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.stroke();
+            }
+            
+            // Update scratched area
+            scratchedArea += Math.PI * scratchRadius * scratchRadius;
+            const percentage = Math.min(100, Math.round((scratchedArea / totalArea) * 100));
+            
+            // Check if card is revealed
+            if (percentage > 50 && !isRevealed) {
                 isRevealed = true;
-                scratchOverlay.style.transition = 'opacity 0.5s ease';
-                scratchOverlay.style.opacity = '0';
+                canvas.style.opacity = '0';
                 setTimeout(() => {
-                    scratchOverlay.style.display = 'none';
+                    canvas.style.display = 'none';
+                    checkGameCompletion();
                 }, 500);
             }
         }
-    }
-    
-    function getCoordinates(e) {
-        const rect = scratchOverlay.getBoundingClientRect();
-        const scaleX = scratchOverlay.width / rect.width;
-        const scaleY = scratchOverlay.height / rect.height;
         
-        if (e.type.includes('touch')) {
-            const touch = e.touches[0];
-            return {
-                x: (touch.clientX - rect.left) * scaleX,
-                y: (touch.clientY - rect.top) * scaleY
-            };
-        } else {
-            return {
-                x: (e.clientX - rect.left) * scaleX,
-                y: (e.clientY - rect.top) * scaleY
-            };
+        function startDrawing(e) {
+            if (isRevealed) return;
+            e.preventDefault();
+            isDrawing = true;
+            const coords = getCoordinates(e);
+            lastX = coords.x;
+            lastY = coords.y;
+            scratchAtPoint(lastX, lastY);
         }
-    }
-    
-    function scratchAtPoint(x, y) {
-        const scratchRadius = 15;
-        const scratchIntensity = 0.7;
         
-        // Create scratch effect
-        ctx.beginPath();
-        ctx.arc(x, y, scratchRadius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${scratchIntensity})`;
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.fill();
-        
-        // Add scratch marks
-        for (let i = 0; i < 3; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const distance = Math.random() * scratchRadius;
-            const tx = x + Math.cos(angle) * distance;
-            const ty = y + Math.sin(angle) * distance;
+        function draw(e) {
+            if (!isDrawing || isRevealed) return;
+            e.preventDefault();
             
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(tx, ty);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.lineWidth = 2;
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.stroke();
+            const coords = getCoordinates(e);
+            const x = coords.x;
+            const y = coords.y;
+            
+            // Draw circles along the path
+            const distance = Math.sqrt(Math.pow(x - lastX, 2) + Math.pow(y - lastY, 2));
+            const steps = Math.ceil(distance / 5);
+            
+            for (let i = 0; i <= steps; i++) {
+                const t = i / steps;
+                const currentX = lastX + (x - lastX) * t;
+                const currentY = lastY + (y - lastY) * t;
+                scratchAtPoint(currentX, currentY);
+            }
+            
+            lastX = x;
+            lastY = y;
         }
         
-        // Update scratched area
-        scratchedArea += Math.PI * scratchRadius * scratchRadius;
-        const percentage = Math.min(100, Math.round((scratchedArea / totalArea) * 100));
-        updateProgress(percentage);
-    }
-    
-    function startDrawing(e) {
-        e.preventDefault();
-        isDrawing = true;
-        const coords = getCoordinates(e);
-        lastX = coords.x;
-        lastY = coords.y;
-        scratchAtPoint(lastX, lastY);
-    }
-    
-    function draw(e) {
-        if (!isDrawing) return;
-        e.preventDefault();
-        
-        const coords = getCoordinates(e);
-        const x = coords.x;
-        const y = coords.y;
-        
-        // Draw circles along the path
-        const distance = Math.sqrt(Math.pow(x - lastX, 2) + Math.pow(y - lastY, 2));
-        const steps = Math.ceil(distance / 5);
-        
-        for (let i = 0; i <= steps; i++) {
-            const t = i / steps;
-            const currentX = lastX + (x - lastX) * t;
-            const currentY = lastY + (y - lastY) * t;
-            scratchAtPoint(currentX, currentY);
+        function stopDrawing(e) {
+            if (e) e.preventDefault();
+            isDrawing = false;
         }
         
-        lastX = x;
-        lastY = y;
-    }
-    
-    function stopDrawing(e) {
-        if (e) e.preventDefault();
-        isDrawing = false;
-    }
-    
-    // Event listeners for scratching
-    scratchOverlay.addEventListener('mousedown', startDrawing, { passive: false });
-    scratchOverlay.addEventListener('mousemove', draw, { passive: false });
-    scratchOverlay.addEventListener('mouseup', stopDrawing, { passive: false });
-    scratchOverlay.addEventListener('mouseleave', stopDrawing, { passive: false });
-    
-    // Touch events for mobile
-    scratchOverlay.addEventListener('touchstart', startDrawing, { passive: false });
-    scratchOverlay.addEventListener('touchmove', draw, { passive: false });
-    scratchOverlay.addEventListener('touchend', stopDrawing, { passive: false });
-    
-    // Reset button click event
-    resetBtn.addEventListener('click', function() {
-        initScratchCard();
+        // Event listeners for scratching
+        canvas.addEventListener('mousedown', startDrawing, { passive: false });
+        canvas.addEventListener('mousemove', draw, { passive: false });
+        canvas.addEventListener('mouseup', stopDrawing, { passive: false });
+        canvas.addEventListener('mouseleave', stopDrawing, { passive: false });
+        
+        // Touch events for mobile
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing, { passive: false });
+        
+        // Initialize on load
+        setCanvasSize();
+        
+        // Handle window resize
+        window.addEventListener('resize', setCanvasSize);
     });
     
-    // Initialize on load
-    setCanvasSize();
+    function checkGameCompletion() {
+        if (isGameComplete) return;
+        
+        revealedSymbols = Array.from(cards)
+            .filter(card => card.querySelector('.scratch-overlay').style.display === 'none')
+            .map(card => card.querySelector('.symbol').textContent);
+        
+        if (revealedSymbols.length === 3) {
+            isGameComplete = true;
+            if (new Set(revealedSymbols).size === 1) {
+                prizeAmount.textContent = '$5';
+                prizeAmount.style.color = '#2ecc71';
+            } else {
+                prizeAmount.textContent = '$0';
+                prizeAmount.style.color = '#e74c3c';
+            }
+        }
+    }
     
-    // Handle window resize
-    window.addEventListener('resize', setCanvasSize);
+    function resetGame() {
+        // Reset game state
+        isGameComplete = false;
+        revealedSymbols = [];
+        prizeAmount.textContent = '$0';
+        prizeAmount.style.color = '#2ecc71';
+        
+        // Reset cards
+        cards.forEach(card => {
+            const canvas = card.querySelector('.scratch-overlay');
+            const symbol = card.querySelector('.symbol');
+            
+            // Reset canvas
+            canvas.style.display = 'block';
+            canvas.style.opacity = '1';
+            
+            // Set random symbol
+            symbol.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+            
+            // Reinitialize scratch card
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Add scratch texture
+            ctx.fillStyle = '#3498db';
+            for (let i = 0; i < canvas.width; i += 20) {
+                for (let j = 0; j < canvas.height; j += 20) {
+                    ctx.fillRect(i, j, 10, 10);
+                }
+            }
+        });
+    }
+    
+    // Reset button click event
+    resetBtn.addEventListener('click', resetGame);
+    
+    // Initialize game
+    resetGame();
 }); 

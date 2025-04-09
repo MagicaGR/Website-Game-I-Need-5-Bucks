@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>I Need 5 Bucks - Scratch and Win!</title>
+    <title>I Need 5 Bucks - Scratch and Match!</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
 </head>
@@ -11,23 +11,37 @@
     <div class="container">
         <header>
             <h1>I Need 5 Bucks</h1>
-            <p class="tagline">Scratch the card to reveal your prize! 🎉</p>
+            <p class="tagline">Scratch and match 3 symbols to win $5! 🎉</p>
         </header>
         
         <main>
-            <div class="scratch-card-container">
-                <div class="progress-container">
-                    <div class="progress-bar" id="progress-bar"></div>
-                    <div class="progress-text" id="progress-text">Scratch more to reveal your prize!</div>
+            <div class="game-container">
+                <div class="instructions">
+                    <p>Scratch each card to reveal a symbol. Match 3 of the same symbol to win $5!</p>
                 </div>
-                <div class="scratch-card">
-                    <div class="prize-area">
-                        <span id="prize-amount">$5</span>
+                
+                <div class="cards-container">
+                    <div class="card" id="card1">
+                        <div class="symbol">?</div>
+                        <canvas class="scratch-overlay"></canvas>
                     </div>
-                    <canvas id="scratch-overlay"></canvas>
-                    <div class="scratch-pattern"></div>
+                    <div class="card" id="card2">
+                        <div class="symbol">?</div>
+                        <canvas class="scratch-overlay"></canvas>
+                    </div>
+                    <div class="card" id="card3">
+                        <div class="symbol">?</div>
+                        <canvas class="scratch-overlay"></canvas>
+                    </div>
                 </div>
-                <button id="reset-btn">Try Again! 🎮</button>
+
+                <div class="result-container">
+                    <div class="prize-display">
+                        <span class="prize-label">Prize:</span>
+                        <span class="prize-amount">$0</span>
+                    </div>
+                    <button id="reset-btn">New Game! 🎮</button>
+                </div>
             </div>
         </main>
 

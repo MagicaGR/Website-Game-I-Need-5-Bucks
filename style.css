@@ -42,58 +42,47 @@ h1 {
     margin-bottom: 20px;
 }
 
-.scratch-card-container {
+.game-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 40px;
+    gap: 30px;
 }
 
-.scratch-card {
+.instructions {
+    background: #f8f9fa;
+    padding: 15px 25px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.cards-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+}
+
+.card {
     position: relative;
-    width: 350px;
+    width: 150px;
     height: 200px;
     background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
     border-radius: 15px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    margin-bottom: 30px;
     overflow: hidden;
     transform-style: preserve-3d;
     transition: transform 0.3s ease;
+    cursor: pointer;
 }
 
-.scratch-card:hover {
+.card:hover {
     transform: translateY(-5px);
 }
 
-#scratch-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    cursor: crosshair;
-    z-index: 2;
-    touch-action: none;
-}
-
-.scratch-pattern {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: repeating-linear-gradient(
-        45deg,
-        #3498db,
-        #3498db 10px,
-        #2980b9 10px,
-        #2980b9 20px
-    );
-    z-index: 1;
-}
-
-.prize-area {
+.symbol {
     position: absolute;
     top: 0;
     left: 0;
@@ -102,22 +91,56 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-    z-index: 0;
-}
-
-#prize-amount {
-    font-size: 3.5rem;
+    font-size: 4rem;
     font-weight: bold;
     color: #e74c3c;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-    animation: glow 2s infinite;
+    z-index: 1;
 }
 
-@keyframes glow {
-    0% { text-shadow: 0 0 5px #e74c3c; }
-    50% { text-shadow: 0 0 20px #e74c3c; }
-    100% { text-shadow: 0 0 5px #e74c3c; }
+.scratch-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+    z-index: 2;
+    touch-action: none;
+    background: repeating-linear-gradient(
+        45deg,
+        #3498db,
+        #3498db 10px,
+        #2980b9 10px,
+        #2980b9 20px
+    );
+}
+
+.result-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.prize-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.5rem;
+    padding: 15px 30px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.prize-label {
+    color: #7f8c8d;
+}
+
+.prize-amount {
+    font-weight: bold;
+    color: #2ecc71;
 }
 
 #reset-btn {
@@ -147,25 +170,13 @@ footer {
     color: #95a5a6;
 }
 
-.progress-container {
-    width: 100%;
-    max-width: 350px;
-    margin: 20px auto;
-    background: #f0f0f0;
-    border-radius: 10px;
-    padding: 10px;
-}
-
-.progress-bar {
-    height: 20px;
-    background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
-    border-radius: 10px;
-    width: 0%;
-    transition: width 0.3s ease;
-}
-
-.progress-text {
-    margin-top: 10px;
-    font-size: 1rem;
-    color: #7f8c8d;
+@media (max-width: 600px) {
+    .cards-container {
+        flex-direction: column;
+    }
+    
+    .card {
+        width: 200px;
+        height: 250px;
+    }
 } 
