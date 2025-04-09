@@ -5,9 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
     
-    // Possible prize amounts
-    const prizes = ['$1', '$2', '$5', '$10', '$20', '$50', '$100'];
-    
     // Initialize variables
     let isDrawing = false;
     let lastX = 0;
@@ -59,9 +56,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const dataURL = canvas.toDataURL();
         scratchOverlay.style.backgroundImage = `url(${dataURL})`;
         
-        // Set a random prize
-        const randomPrize = prizes[Math.floor(Math.random() * prizes.length)];
-        prizeAmount.textContent = randomPrize;
+        // Always set prize to $5
+        prizeAmount.textContent = '$5';
     }
     
     function updateProgress(percentage) {
@@ -87,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function startDrawing(e) {
+        e.preventDefault();
         isDrawing = true;
         const rect = scratchOverlay.getBoundingClientRect();
         lastX = e.clientX - rect.left;
@@ -94,16 +91,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function startDrawingTouch(e) {
+        e.preventDefault();
         isDrawing = true;
         const touch = e.touches[0];
         const rect = scratchOverlay.getBoundingClientRect();
         lastX = touch.clientX - rect.left;
         lastY = touch.clientY - rect.top;
-        e.preventDefault();
     }
     
     function draw(e) {
         if (!isDrawing) return;
+        e.preventDefault();
         
         const rect = scratchOverlay.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -133,6 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function drawTouch(e) {
         if (!isDrawing) return;
+        e.preventDefault();
         
         const touch = e.touches[0];
         const rect = scratchOverlay.getBoundingClientRect();
@@ -159,23 +158,23 @@ document.addEventListener('DOMContentLoaded', function() {
         
         lastX = x;
         lastY = y;
-        e.preventDefault();
     }
     
-    function stopDrawing() {
+    function stopDrawing(e) {
+        if (e) e.preventDefault();
         isDrawing = false;
     }
     
     // Event listeners for scratching
-    scratchOverlay.addEventListener('mousedown', startDrawing);
-    scratchOverlay.addEventListener('mousemove', draw);
-    scratchOverlay.addEventListener('mouseup', stopDrawing);
-    scratchOverlay.addEventListener('mouseleave', stopDrawing);
+    scratchOverlay.addEventListener('mousedown', startDrawing, { passive: false });
+    scratchOverlay.addEventListener('mousemove', draw, { passive: false });
+    scratchOverlay.addEventListener('mouseup', stopDrawing, { passive: false });
+    scratchOverlay.addEventListener('mouseleave', stopDrawing, { passive: false });
     
     // Touch events for mobile
-    scratchOverlay.addEventListener('touchstart', startDrawingTouch);
-    scratchOverlay.addEventListener('touchmove', drawTouch);
-    scratchOverlay.addEventListener('touchend', stopDrawing);
+    scratchOverlay.addEventListener('touchstart', startDrawingTouch, { passive: false });
+    scratchOverlay.addEventListener('touchmove', drawTouch, { passive: false });
+    scratchOverlay.addEventListener('touchend', stopDrawing, { passive: false });
     
     // Reset button click event
     resetBtn.addEventListener('click', initScratchCard);
