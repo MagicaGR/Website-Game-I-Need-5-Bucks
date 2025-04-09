@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let scratchedArea = 0;
     let totalArea = 0;
     let isRevealed = false;
+    let scratchPoints = [];
     
     // Create canvas context for scratching
     const canvas = document.createElement('canvas');
@@ -33,6 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
         scratchOverlay.style.opacity = '1';
         scratchedArea = 0;
         isRevealed = false;
+        scratchPoints = [];
         updateProgress(0);
         
         // Set canvas size
@@ -88,6 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const rect = scratchOverlay.getBoundingClientRect();
         lastX = e.clientX - rect.left;
         lastY = e.clientY - rect.top;
+        scratchPoints.push({ x: lastX, y: lastY });
     }
     
     function startDrawingTouch(e) {
@@ -97,6 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const rect = scratchOverlay.getBoundingClientRect();
         lastX = touch.clientX - rect.left;
         lastY = touch.clientY - rect.top;
+        scratchPoints.push({ x: lastX, y: lastY });
     }
     
     function draw(e) {
@@ -108,17 +112,34 @@ document.addEventListener('DOMContentLoaded', function() {
         const y = e.clientY - rect.top;
         const radius = 15;
         
-        // Add to the clip path
-        const currentClipPath = scratchOverlay.style.clipPath || '';
-        const newCircle = `circle(${radius}px at ${x}px ${y}px)`;
+        // Add point to scratch path
+        scratchPoints.push({ x, y });
         
-        if (currentClipPath === '') {
-            scratchOverlay.style.clipPath = `${newCircle}`;
-        } else if (!currentClipPath.includes('none')) {
-            scratchOverlay.style.clipPath = `${currentClipPath}, ${newCircle}`;
-        } else {
-            scratchOverlay.style.clipPath = newCircle;
+        // Create a new canvas for the scratch effect
+        const scratchCanvas = document.createElement('canvas');
+        scratchCanvas.width = canvas.width;
+        scratchCanvas.height = canvas.height;
+        const scratchCtx = scratchCanvas.getContext('2d');
+        
+        // Draw the scratch path
+        scratchCtx.beginPath();
+        scratchCtx.moveTo(scratchPoints[0].x, scratchPoints[0].y);
+        for (let i = 1; i < scratchPoints.length; i++) {
+            scratchCtx.lineTo(scratchPoints[i].x, scratchPoints[i].y);
         }
+        scratchCtx.strokeStyle = 'transparent';
+        scratchCtx.lineWidth = radius * 2;
+        scratchCtx.lineCap = 'round';
+        scratchCtx.lineJoin = 'round';
+        scratchCtx.stroke();
+        
+        // Create a mask from the scratch path
+        const mask = scratchCtx.getImageData(0, 0, scratchCanvas.width, scratchCanvas.height);
+        
+        // Apply the mask to the overlay
+        const overlayCtx = scratchOverlay.getContext('2d');
+        overlayCtx.globalCompositeOperation = 'destination-out';
+        overlayCtx.drawImage(scratchCanvas, 0, 0);
         
         // Calculate scratched area
         scratchedArea += Math.PI * radius * radius;
@@ -139,17 +160,34 @@ document.addEventListener('DOMContentLoaded', function() {
         const y = touch.clientY - rect.top;
         const radius = 15;
         
-        // Add to the clip path
-        const currentClipPath = scratchOverlay.style.clipPath || '';
-        const newCircle = `circle(${radius}px at ${x}px ${y}px)`;
+        // Add point to scratch path
+        scratchPoints.push({ x, y });
         
-        if (currentClipPath === '') {
-            scratchOverlay.style.clipPath = `${newCircle}`;
-        } else if (!currentClipPath.includes('none')) {
-            scratchOverlay.style.clipPath = `${currentClipPath}, ${newCircle}`;
-        } else {
-            scratchOverlay.style.clipPath = newCircle;
+        // Create a new canvas for the scratch effect
+        const scratchCanvas = document.createElement('canvas');
+        scratchCanvas.width = canvas.width;
+        scratchCanvas.height = canvas.height;
+        const scratchCtx = scratchCanvas.getContext('2d');
+        
+        // Draw the scratch path
+        scratchCtx.beginPath();
+        scratchCtx.moveTo(scratchPoints[0].x, scratchPoints[0].y);
+        for (let i = 1; i < scratchPoints.length; i++) {
+            scratchCtx.lineTo(scratchPoints[i].x, scratchPoints[i].y);
         }
+        scratchCtx.strokeStyle = 'transparent';
+        scratchCtx.lineWidth = radius * 2;
+        scratchCtx.lineCap = 'round';
+        scratchCtx.lineJoin = 'round';
+        scratchCtx.stroke();
+        
+        // Create a mask from the scratch path
+        const mask = scratchCtx.getImageData(0, 0, scratchCanvas.width, scratchCanvas.height);
+        
+        // Apply the mask to the overlay
+        const overlayCtx = scratchOverlay.getContext('2d');
+        overlayCtx.globalCompositeOperation = 'destination-out';
+        overlayCtx.drawImage(scratchCanvas, 0, 0);
         
         // Calculate scratched area
         scratchedArea += Math.PI * radius * radius;
