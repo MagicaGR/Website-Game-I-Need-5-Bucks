@@ -35,6 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Reset the scratch overlay
             scratchedArea = 0;
             isRevealed = false;
+            canvas.style.display = 'block';
+            canvas.style.opacity = '1';
             
             // Clear the canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -72,18 +74,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         function scratchAtPoint(x, y) {
-            const scratchRadius = 15;
-            const scratchIntensity = 0.7;
+            const scratchRadius = 20;
             
             // Create scratch effect
             ctx.beginPath();
             ctx.arc(x, y, scratchRadius, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 255, 255, ${scratchIntensity})`;
+            ctx.fillStyle = 'transparent';
             ctx.globalCompositeOperation = 'destination-out';
             ctx.fill();
             
             // Add scratch marks
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 5; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const distance = Math.random() * scratchRadius;
                 const tx = x + Math.cos(angle) * distance;
@@ -92,8 +93,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 ctx.beginPath();
                 ctx.moveTo(x, y);
                 ctx.lineTo(tx, ty);
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'transparent';
+                ctx.lineWidth = 3;
                 ctx.globalCompositeOperation = 'destination-out';
                 ctx.stroke();
             }
@@ -105,6 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Check if card is revealed
             if (percentage > 50 && !isRevealed) {
                 isRevealed = true;
+                canvas.style.transition = 'opacity 0.5s ease';
                 canvas.style.opacity = '0';
                 setTimeout(() => {
                     canvas.style.display = 'none';
@@ -152,15 +154,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Event listeners for scratching
-        canvas.addEventListener('mousedown', startDrawing, { passive: false });
-        canvas.addEventListener('mousemove', draw, { passive: false });
-        canvas.addEventListener('mouseup', stopDrawing, { passive: false });
-        canvas.addEventListener('mouseleave', stopDrawing, { passive: false });
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
         
         // Touch events for mobile
-        canvas.addEventListener('touchstart', startDrawing, { passive: false });
-        canvas.addEventListener('touchmove', draw, { passive: false });
-        canvas.addEventListener('touchend', stopDrawing, { passive: false });
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
         
         // Initialize on load
         setCanvasSize();
