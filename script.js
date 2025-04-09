@@ -32,6 +32,13 @@ document.addEventListener('DOMContentLoaded', function() {
         isRevealed = false;
         updateProgress(0);
         
+        // Reset canvas display
+        scratchOverlay.style.display = 'block';
+        scratchOverlay.style.opacity = '1';
+        
+        // Clear the canvas
+        ctx.clearRect(0, 0, scratchOverlay.width, scratchOverlay.height);
+        
         // Fill the canvas with a color
         ctx.fillStyle = '#3498db';
         ctx.fillRect(0, 0, scratchOverlay.width, scratchOverlay.height);
@@ -97,6 +104,34 @@ document.addEventListener('DOMContentLoaded', function() {
         const coords = getCoordinates(e);
         lastX = coords.x;
         lastY = coords.y;
+        
+        // Draw initial circle
+        drawCircle(lastX, lastY);
+    }
+    
+    function drawCircle(x, y) {
+        const radius = 15;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'transparent';
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.fill();
+        
+        // Add some texture to make it look more like scratching
+        for (let i = 0; i < 5; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = Math.random() * radius;
+            const tx = x + Math.cos(angle) * distance;
+            const ty = y + Math.sin(angle) * distance;
+            
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(tx, ty);
+            ctx.strokeStyle = 'transparent';
+            ctx.lineWidth = 2;
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.stroke();
+        }
     }
     
     function draw(e) {
@@ -106,21 +141,20 @@ document.addEventListener('DOMContentLoaded', function() {
         const coords = getCoordinates(e);
         const x = coords.x;
         const y = coords.y;
-        const radius = 20; // Increased radius for better visibility
         
-        // Draw the scratch path
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(x, y);
-        ctx.strokeStyle = 'transparent';
-        ctx.lineWidth = radius * 2;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.stroke();
+        // Draw circles along the path
+        const distance = Math.sqrt(Math.pow(x - lastX, 2) + Math.pow(y - lastY, 2));
+        const steps = Math.ceil(distance / 5);
+        
+        for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            const currentX = lastX + (x - lastX) * t;
+            const currentY = lastY + (y - lastY) * t;
+            drawCircle(currentX, currentY);
+        }
         
         // Calculate scratched area
-        scratchedArea += Math.PI * radius * radius;
+        scratchedArea += Math.PI * 15 * 15 * steps;
         const percentage = Math.min(100, Math.round((scratchedArea / totalArea) * 100));
         updateProgress(percentage);
         
@@ -145,7 +179,9 @@ document.addEventListener('DOMContentLoaded', function() {
     scratchOverlay.addEventListener('touchend', stopDrawing, { passive: false });
     
     // Reset button click event
-    resetBtn.addEventListener('click', initScratchCard);
+    resetBtn.addEventListener('click', function() {
+        initScratchCard();
+    });
     
     // Initialize on load
     setCanvasSize();
