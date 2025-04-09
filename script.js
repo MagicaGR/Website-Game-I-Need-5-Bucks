@@ -118,6 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
         function startDrawing(e) {
             if (isRevealed) return;
             e.preventDefault();
+            e.stopPropagation();
             isDrawing = true;
             const coords = getCoordinates(e);
             lastX = coords.x;
@@ -128,6 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
         function draw(e) {
             if (!isDrawing || isRevealed) return;
             e.preventDefault();
+            e.stopPropagation();
             
             const coords = getCoordinates(e);
             const x = coords.x;
@@ -149,20 +151,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         function stopDrawing(e) {
-            if (e) e.preventDefault();
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             isDrawing = false;
         }
         
+        // Prevent double-click from selecting text
+        canvas.addEventListener('dblclick', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        
         // Event listeners for scratching
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseleave', stopDrawing);
+        canvas.addEventListener('mousedown', startDrawing, { passive: false });
+        canvas.addEventListener('mousemove', draw, { passive: false });
+        canvas.addEventListener('mouseup', stopDrawing, { passive: false });
+        canvas.addEventListener('mouseleave', stopDrawing, { passive: false });
         
         // Touch events for mobile
-        canvas.addEventListener('touchstart', startDrawing);
-        canvas.addEventListener('touchmove', draw);
-        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing, { passive: false });
         
         // Initialize on load
         setCanvasSize();
@@ -211,6 +222,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Reinitialize scratch card
             const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
