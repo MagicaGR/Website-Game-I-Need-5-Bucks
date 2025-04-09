@@ -18,9 +18,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Set canvas size
     function setCanvasSize() {
-        scratchOverlay.width = scratchOverlay.offsetWidth;
-        scratchOverlay.height = scratchOverlay.offsetHeight;
+        const rect = scratchOverlay.getBoundingClientRect();
+        scratchOverlay.width = rect.width;
+        scratchOverlay.height = rect.height;
         totalArea = scratchOverlay.width * scratchOverlay.height;
+        initScratchCard(); // Reinitialize when size changes
     }
     
     // Initialize the scratch card
@@ -29,9 +31,6 @@ document.addEventListener('DOMContentLoaded', function() {
         scratchedArea = 0;
         isRevealed = false;
         updateProgress(0);
-        
-        // Set canvas size
-        setCanvasSize();
         
         // Fill the canvas with a color
         ctx.fillStyle = '#3498db';
@@ -73,61 +72,41 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    function getCoordinates(e) {
+        const rect = scratchOverlay.getBoundingClientRect();
+        const scaleX = scratchOverlay.width / rect.width;
+        const scaleY = scratchOverlay.height / rect.height;
+        
+        if (e.type.includes('touch')) {
+            const touch = e.touches[0];
+            return {
+                x: (touch.clientX - rect.left) * scaleX,
+                y: (touch.clientY - rect.top) * scaleY
+            };
+        } else {
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+    }
+    
     function startDrawing(e) {
         e.preventDefault();
         isDrawing = true;
-        const rect = scratchOverlay.getBoundingClientRect();
-        lastX = e.clientX - rect.left;
-        lastY = e.clientY - rect.top;
-    }
-    
-    function startDrawingTouch(e) {
-        e.preventDefault();
-        isDrawing = true;
-        const touch = e.touches[0];
-        const rect = scratchOverlay.getBoundingClientRect();
-        lastX = touch.clientX - rect.left;
-        lastY = touch.clientY - rect.top;
+        const coords = getCoordinates(e);
+        lastX = coords.x;
+        lastY = coords.y;
     }
     
     function draw(e) {
         if (!isDrawing) return;
         e.preventDefault();
         
-        const rect = scratchOverlay.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const radius = 15;
-        
-        // Draw the scratch path
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(x, y);
-        ctx.strokeStyle = 'transparent';
-        ctx.lineWidth = radius * 2;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.stroke();
-        
-        // Calculate scratched area
-        scratchedArea += Math.PI * radius * radius;
-        const percentage = Math.min(100, Math.round((scratchedArea / totalArea) * 100));
-        updateProgress(percentage);
-        
-        lastX = x;
-        lastY = y;
-    }
-    
-    function drawTouch(e) {
-        if (!isDrawing) return;
-        e.preventDefault();
-        
-        const touch = e.touches[0];
-        const rect = scratchOverlay.getBoundingClientRect();
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
-        const radius = 15;
+        const coords = getCoordinates(e);
+        const x = coords.x;
+        const y = coords.y;
+        const radius = 20; // Increased radius for better visibility
         
         // Draw the scratch path
         ctx.beginPath();
@@ -161,15 +140,15 @@ document.addEventListener('DOMContentLoaded', function() {
     scratchOverlay.addEventListener('mouseleave', stopDrawing, { passive: false });
     
     // Touch events for mobile
-    scratchOverlay.addEventListener('touchstart', startDrawingTouch, { passive: false });
-    scratchOverlay.addEventListener('touchmove', drawTouch, { passive: false });
+    scratchOverlay.addEventListener('touchstart', startDrawing, { passive: false });
+    scratchOverlay.addEventListener('touchmove', draw, { passive: false });
     scratchOverlay.addEventListener('touchend', stopDrawing, { passive: false });
     
     // Reset button click event
     resetBtn.addEventListener('click', initScratchCard);
     
     // Initialize on load
-    initScratchCard();
+    setCanvasSize();
     
     // Handle window resize
     window.addEventListener('resize', setCanvasSize);
