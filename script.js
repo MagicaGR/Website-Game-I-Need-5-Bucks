@@ -8,10 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Possible prize amounts
     const prizes = ['$1', '$2', '$5', '$10', '$20', '$50', '$100'];
     
-    // Initialize the scratch card
-    initScratchCard();
-    
-    // Set up the scratch functionality
+    // Initialize variables
     let isDrawing = false;
     let lastX = 0;
     let lastY = 0;
@@ -21,52 +18,46 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Create canvas context for scratching
     const canvas = document.createElement('canvas');
-    canvas.width = scratchOverlay.offsetWidth;
-    canvas.height = scratchOverlay.offsetHeight;
     const ctx = canvas.getContext('2d');
     
-    // Fill the canvas with a color
-    ctx.fillStyle = '#3498db';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Add some text or pattern to make it look like a scratch card
-    ctx.font = 'bold 20px Arial';
-    ctx.fillStyle = '#2980b9';
-    ctx.textAlign = 'center';
-    for (let i = 0; i < 8; i++) {
-        for (let j = 0; j < 4; j++) {
-            ctx.fillText('SCRATCH!', 40 + i * 40, 40 + j * 40);
-        }
+    // Set canvas size
+    function setCanvasSize() {
+        canvas.width = scratchOverlay.offsetWidth;
+        canvas.height = scratchOverlay.offsetHeight;
+        totalArea = canvas.width * canvas.height;
     }
     
-    // Convert canvas to image and set as background
-    const dataURL = canvas.toDataURL();
-    scratchOverlay.style.backgroundImage = `url(${dataURL})`;
-    
-    // Calculate total area
-    totalArea = canvas.width * canvas.height;
-    
-    // Event listeners for scratching
-    scratchOverlay.addEventListener('mousedown', startDrawing);
-    scratchOverlay.addEventListener('mousemove', draw);
-    scratchOverlay.addEventListener('mouseup', stopDrawing);
-    scratchOverlay.addEventListener('mouseleave', stopDrawing);
-    
-    // Touch events for mobile
-    scratchOverlay.addEventListener('touchstart', startDrawingTouch);
-    scratchOverlay.addEventListener('touchmove', drawTouch);
-    scratchOverlay.addEventListener('touchend', stopDrawing);
-    
-    // Reset button click event
-    resetBtn.addEventListener('click', initScratchCard);
-    
+    // Initialize the scratch card
     function initScratchCard() {
         // Reset the scratch overlay
         scratchOverlay.style.background = '#3498db';
         scratchOverlay.style.clipPath = 'none';
+        scratchOverlay.style.display = 'block';
+        scratchOverlay.style.opacity = '1';
         scratchedArea = 0;
         isRevealed = false;
         updateProgress(0);
+        
+        // Set canvas size
+        setCanvasSize();
+        
+        // Fill the canvas with a color
+        ctx.fillStyle = '#3498db';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Add some text or pattern to make it look like a scratch card
+        ctx.font = 'bold 20px Arial';
+        ctx.fillStyle = '#2980b9';
+        ctx.textAlign = 'center';
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 4; j++) {
+                ctx.fillText('SCRATCH!', 40 + i * 40, 40 + j * 40);
+            }
+        }
+        
+        // Convert canvas to image and set as background
+        const dataURL = canvas.toDataURL();
+        scratchOverlay.style.backgroundImage = `url(${dataURL})`;
         
         // Set a random prize
         const randomPrize = prizes[Math.floor(Math.random() * prizes.length)];
@@ -97,8 +88,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function startDrawing(e) {
         isDrawing = true;
-        lastX = e.offsetX;
-        lastY = e.offsetY;
+        const rect = scratchOverlay.getBoundingClientRect();
+        lastX = e.clientX - rect.left;
+        lastY = e.clientY - rect.top;
     }
     
     function startDrawingTouch(e) {
@@ -113,10 +105,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function draw(e) {
         if (!isDrawing) return;
         
-        // Create a scratched effect using clip-path
-        const x = e.offsetX;
-        const y = e.offsetY;
-        const radius = 15; // Smaller radius for more precise scratching
+        const rect = scratchOverlay.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const radius = 15;
         
         // Add to the clip path
         const currentClipPath = scratchOverlay.style.clipPath || '';
@@ -146,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const rect = scratchOverlay.getBoundingClientRect();
         const x = touch.clientX - rect.left;
         const y = touch.clientY - rect.top;
-        const radius = 15; // Smaller radius for more precise scratching
+        const radius = 15;
         
         // Add to the clip path
         const currentClipPath = scratchOverlay.style.clipPath || '';
@@ -173,4 +165,24 @@ document.addEventListener('DOMContentLoaded', function() {
     function stopDrawing() {
         isDrawing = false;
     }
+    
+    // Event listeners for scratching
+    scratchOverlay.addEventListener('mousedown', startDrawing);
+    scratchOverlay.addEventListener('mousemove', draw);
+    scratchOverlay.addEventListener('mouseup', stopDrawing);
+    scratchOverlay.addEventListener('mouseleave', stopDrawing);
+    
+    // Touch events for mobile
+    scratchOverlay.addEventListener('touchstart', startDrawingTouch);
+    scratchOverlay.addEventListener('touchmove', drawTouch);
+    scratchOverlay.addEventListener('touchend', stopDrawing);
+    
+    // Reset button click event
+    resetBtn.addEventListener('click', initScratchCard);
+    
+    // Initialize on load
+    initScratchCard();
+    
+    // Handle window resize
+    window.addEventListener('resize', setCanvasSize);
 }); 
