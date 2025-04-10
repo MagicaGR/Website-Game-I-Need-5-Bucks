@@ -14,27 +14,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const canvas = card.querySelector('.scratch-overlay');
         const symbol = card.querySelector('.symbol');
         const ctx = canvas.getContext('2d');
-        let isDrawing = false;
-        let lastX = 0;
-        let lastY = 0;
-        let scratchedArea = 0;
-        let totalArea = 0;
-        let isRevealed = false;
-        
-        // Set canvas size
-        function setCanvasSize() {
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    let scratchedArea = 0;
+    let totalArea = 0;
+    let isRevealed = false;
+    
+    // Set canvas size
+    function setCanvasSize() {
             const rect = canvas.getBoundingClientRect();
             canvas.width = rect.width;
             canvas.height = rect.height;
             totalArea = canvas.width * canvas.height;
             initScratchCard();
-        }
-        
-        // Initialize the scratch card
-        function initScratchCard() {
-            // Reset the scratch overlay
-            scratchedArea = 0;
-            isRevealed = false;
+    }
+    
+    // Initialize the scratch card
+    function initScratchCard() {
+        // Reset the scratch overlay
+        scratchedArea = 0;
+        isRevealed = false;
             canvas.style.display = 'block';
             canvas.style.opacity = '1';
             
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // Add scratch texture
-            ctx.fillStyle = '#3498db';
+        ctx.fillStyle = '#3498db';
             for (let i = 0; i < canvas.width; i += 20) {
                 for (let j = 0; j < canvas.height; j += 20) {
                     ctx.fillRect(i, j, 10, 10);
@@ -112,23 +112,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     canvas.style.display = 'none';
                     checkGameCompletion();
                 }, 500);
-            }
         }
-        
-        function startDrawing(e) {
+    }
+    
+    function startDrawing(e) {
             if (isRevealed) return;
-            e.preventDefault();
+        e.preventDefault();
             e.stopPropagation();
-            isDrawing = true;
+        isDrawing = true;
             const coords = getCoordinates(e);
             lastX = coords.x;
             lastY = coords.y;
             scratchAtPoint(lastX, lastY);
-        }
-        
-        function draw(e) {
+    }
+    
+    function draw(e) {
             if (!isDrawing || isRevealed) return;
-            e.preventDefault();
+        e.preventDefault();
             e.stopPropagation();
             
             const coords = getCoordinates(e);
@@ -145,11 +145,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 const currentY = lastY + (y - lastY) * t;
                 scratchAtPoint(currentX, currentY);
             }
-            
-            lastX = x;
-            lastY = y;
-        }
         
+        lastX = x;
+        lastY = y;
+    }
+    
         function stopDrawing(e) {
             if (e) {
                 e.preventDefault();
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Prevent double-click from selecting text
         canvas.addEventListener('dblclick', function(e) {
-            e.preventDefault();
+        e.preventDefault();
             e.stopPropagation();
         });
         
