@@ -14,8 +14,6 @@ window.addEventListener('load', function() {
     const dayNightToggle = document.getElementById('day-night-toggle');
     const achievement = document.getElementById('achievement');
     const achievementText = document.getElementById('achievement-text');
-    const portraitWarning = document.querySelector('.portrait-warning');
-    const dismissWarningBtn = document.getElementById('dismiss-warning');
     
     // DOM elements - Game area
     const player = document.getElementById('player');
@@ -144,20 +142,6 @@ window.addEventListener('load', function() {
         // Update high score display
         highScoreElement.textContent = highScore;
         
-        // Make achievement notification dismissable on click
-        achievement.addEventListener('click', () => {
-            achievement.classList.remove('show');
-        });
-        
-        // Add specific handler for close button
-        const closeAchievementBtn = document.getElementById('close-achievement');
-        if (closeAchievementBtn) {
-            closeAchievementBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent the click from bubbling to the achievement element
-                achievement.classList.remove('show');
-            });
-        }
-        
         // Hide intro screen on start button click
         startIntroBtn.addEventListener('click', () => {
             introScreen.classList.add('hidden');
@@ -187,20 +171,6 @@ window.addEventListener('load', function() {
             updateDayNightCycle();
             updateDoubleJumpIndicator();
         });
-        
-        // Dismiss portrait warning
-        if (dismissWarningBtn) {
-            dismissWarningBtn.addEventListener('click', () => {
-                portraitWarning.style.display = 'none';
-                // Store preference in local storage
-                localStorage.setItem('dismissedPortraitWarning', 'true');
-            });
-            
-            // Check if warning was previously dismissed
-            if (localStorage.getItem('dismissedPortraitWarning') === 'true') {
-                portraitWarning.style.display = 'none';
-            }
-        }
         
         // Character selection
         characterOptions.forEach(option => {
@@ -722,8 +692,8 @@ window.addEventListener('load', function() {
             
             // Remove obstacle when it's off-screen
             if (obstacleRect.right < 0) {
-                if (obstacle.parentElement) {
-                    obstacle.remove();
+            if (obstacle.parentElement) {
+                obstacle.remove();
                 }
                 clearInterval(obstacleData.interval);
                 // Remove from obstacles array
@@ -934,11 +904,11 @@ window.addEventListener('load', function() {
             gameArea.appendChild(trail);
             
             // Remove after animation
-            setTimeout(() => {
+        setTimeout(() => {
                 if (trail.parentElement) {
                     trail.remove();
                 }
-            }, 500);
+        }, 500);
             
             trailCount++;
         }, 50);
@@ -1091,7 +1061,7 @@ window.addEventListener('load', function() {
     function createWinParticle() {
         if (!gameArea) return;
         
-        const particle = document.createElement('div');
+                const particle = document.createElement('div');
         particle.className = 'win-particle';
         
         // Random position in game area
@@ -1107,14 +1077,14 @@ window.addEventListener('load', function() {
         const hue = Math.floor(Math.random() * 360);
         particle.style.backgroundColor = `hsla(${hue}, 100%, 65%, 0.8)`;
         particle.style.boxShadow = `0 0 15px hsla(${hue}, 100%, 65%, 0.8)`;
-        
-        gameArea.appendChild(particle);
-        
+                
+                gameArea.appendChild(particle);
+                
         // Remove after animation completes
-        setTimeout(() => {
-            if (particle.parentElement) {
-                particle.remove();
-            }
+                setTimeout(() => {
+                    if (particle.parentElement) {
+                        particle.remove();
+                    }
         }, 1500);
     }
     
@@ -1220,207 +1190,4 @@ window.addEventListener('load', function() {
         }
     `;
     document.head.appendChild(style);
-    
-    // Event Listeners for Game Screens
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize the game on page load
-        initializeGame();
-        
-        // Handle window resize to adjust game dimensions
-        window.addEventListener('resize', debounce(handleResize, 250));
-        
-        // Initial resize to set proper dimensions
-        handleResize();
-    });
-    
-    // Function to handle window resize
-    function handleResize() {
-        // Adjust game area dimensions based on screen size
-        const gameContainer = document.querySelector('.game-container');
-        const gameArea = document.querySelector('.game-area');
-        
-        // Force redraw of game elements
-        updateGameVisuals();
-        
-        // Ensure obstacle positions are reset if needed
-        adjustObstaclePositions();
-    }
-    
-    // Debounce function to limit resize event calls
-    function debounce(func, delay) {
-        let timer;
-        return function() {
-            const context = this;
-            const args = arguments;
-            clearTimeout(timer);
-            timer = setTimeout(() => func.apply(context, args), delay);
-        };
-    }
-    
-    // Update game visuals based on current dimensions
-    function updateGameVisuals() {
-        // Update player and obstacle positions/sizes
-        if (player) {
-            // Ensure player is properly positioned
-            player.style.bottom = `${playerBottom}px`;
-        }
-        
-        // Update obstacles if they exist
-        document.querySelectorAll('.obstacle').forEach(obstacle => {
-            // Make sure obstacles maintain proper relative positions
-            const currentLeft = parseInt(obstacle.style.left);
-            obstacle.style.left = `${currentLeft}px`;
-        });
-    }
-    
-    // Adjust obstacle positions if needed
-    function adjustObstaclePositions() {
-        const gameArea = document.querySelector('.game-area');
-        const gameWidth = gameArea.offsetWidth;
-        
-        document.querySelectorAll('.obstacle').forEach(obstacle => {
-            const obstacleLeft = parseInt(obstacle.style.left);
-            
-            // If obstacle is outside game area, reset it
-            if (obstacleLeft < -50) {
-                obstacle.remove();
-            } else if (obstacleLeft > gameWidth) {
-                // Ensure obstacles aren't positioned beyond game area
-                obstacle.style.left = `${gameWidth}px`;
-            }
-        });
-    }
-    
-    function initializeGame() {
-        // Set initial screen orientation handling for mobile
-        if (window.screen && window.screen.orientation) {
-            handleOrientationChange();
-            window.screen.orientation.addEventListener('change', handleOrientationChange);
-        } else if (window.orientation !== undefined) {
-            handleOrientationChange();
-            window.addEventListener('orientationchange', handleOrientationChange);
-        }
-    }
-    
-    // Handle screen orientation changes
-    function handleOrientationChange() {
-        setTimeout(() => {
-            handleResize();
-            
-            // Check if user previously dismissed the warning
-            const dismissedWarning = localStorage.getItem('dismissedPortraitWarning') === 'true';
-            
-            // Display a message for mobile users in portrait mode only if they haven't dismissed it
-            const isPortrait = window.matchMedia("(orientation: portrait)").matches;
-            const isMobile = window.matchMedia("(max-width: 767px)").matches;
-            
-            if (isMobile && isPortrait && !dismissedWarning) {
-                showMessage("Rotate your device for a better experience", 3000);
-                if (portraitWarning) {
-                    portraitWarning.style.display = 'flex';
-                }
-            } else if (portraitWarning) {
-                portraitWarning.style.display = 'none';
-            }
-        }, 300);
-    }
-    
-    // Show temporary message
-    function showMessage(text, duration) {
-        let messageElement = document.getElementById('temp-message');
-        
-        if (!messageElement) {
-            messageElement = document.createElement('div');
-            messageElement.id = 'temp-message';
-            messageElement.style.position = 'fixed';
-            messageElement.style.top = '10px';
-            messageElement.style.left = '50%';
-            messageElement.style.transform = 'translateX(-50%)';
-            messageElement.style.backgroundColor = 'rgba(0,0,0,0.7)';
-            messageElement.style.color = 'white';
-            messageElement.style.padding = '10px 20px';
-            messageElement.style.borderRadius = '5px';
-            messageElement.style.zIndex = '9999';
-            messageElement.style.textAlign = 'center';
-            messageElement.style.fontSize = '14px';
-            document.body.appendChild(messageElement);
-        }
-        
-        messageElement.textContent = text;
-        messageElement.style.display = 'block';
-        
-        setTimeout(() => {
-            messageElement.style.display = 'none';
-        }, duration);
-    }
-    
-    // Function to resize canvas and adjust game elements
-    function resizeHandler() {
-        const gameContainer = document.getElementById('game-container');
-        const containerWidth = gameContainer.clientWidth;
-        const containerHeight = gameContainer.clientHeight;
-        
-        // Calculate the appropriate canvas size while maintaining aspect ratio
-        const originalRatio = 800 / 600;
-        let newWidth = containerWidth;
-        let newHeight = containerHeight;
-        
-        // Ensure the canvas fits within the container while maintaining aspect ratio
-        if (containerWidth / containerHeight > originalRatio) {
-            newWidth = containerHeight * originalRatio;
-        } else {
-            newHeight = containerWidth / originalRatio;
-        }
-        
-        // Apply the new dimensions
-        canvas.width = newWidth;
-        canvas.height = newHeight;
-        
-        // Scale the game elements accordingly
-        const scaleX = newWidth / 800;
-        const scaleY = newHeight / 600;
-        
-        // Update ground height based on new dimensions
-        groundHeight = Math.floor(50 * scaleY);
-        
-        // Adjust player position and dimensions
-        player.width = Math.floor(50 * scaleX);
-        player.height = Math.floor(50 * scaleY);
-        player.x = Math.floor(100 * scaleX);
-        player.y = canvas.height - groundHeight - player.height;
-        initialPlayerY = player.y;
-        
-        // Update obstacle sizes if there are any active
-        obstacles.forEach(obstacle => {
-            obstacle.width = Math.floor(obstacle.initialWidth * scaleX);
-            obstacle.height = Math.floor(obstacle.initialHeight * scaleY);
-            obstacle.y = canvas.height - groundHeight - obstacle.height;
-        });
-        
-        // Update power-up sizes if there are any active
-        powerUps.forEach(powerUp => {
-            powerUp.width = Math.floor(30 * scaleX);
-            powerUp.height = Math.floor(30 * scaleY);
-        });
-        
-        // Redraw the game
-        drawGame();
-    }
-    
-    // Add resize event listener
-    window.addEventListener('resize', resizeHandler);
-    // Call resize handler on initial load
-    window.addEventListener('load', resizeHandler);
-    
-    // Force hide any stuck achievement notifications
-    if (achievement) {
-        achievement.classList.remove('show');
-        
-        // Add a key press handler to dismiss achievement with Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                achievement.classList.remove('show');
-            }
-        });
-    }
 }); 

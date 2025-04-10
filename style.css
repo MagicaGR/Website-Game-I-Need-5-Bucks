@@ -6,15 +6,6 @@
 }
 
 :root {
-    --primary-color: #7C3AED;
-    --primary-color-dark: #6D28D9;
-    --secondary-color: #10B981;
-    --accent-color: #F59E0B;
-    --text-color: #F3F4F6;
-    --bg-color: #0f0f1e;
-    --dark-bg: #060614;
-    --ui-element-bg: rgba(15, 15, 30, 0.8);
-    --ui-element-border: rgba(124, 58, 237, 0.5);
     --bg-primary: #0f0f1e;
     --bg-secondary: #1a1a2e;
     --accent-primary: #4cc9f0;
@@ -29,11 +20,6 @@
     --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     --blur-bg: rgba(255, 255, 255, 0.08);
     --border-radius: 16px;
-    --game-height: min(280px, 35vh);
-    
-    /* New responsive variables */
-    --container-padding: 10px;
-    --game-max-width: 500px;
 }
 
 @keyframes gradientFlow {
@@ -44,8 +30,6 @@
 
 html {
     scroll-behavior: smooth;
-    height: 100%;
-    -webkit-text-size-adjust: 100%; /* Prevent font size adjustment on orientation change */
 }
 
 body {
@@ -55,15 +39,14 @@ body {
     color: var(--text-primary);
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     min-height: 100vh;
-    height: 100%;
-    overflow-x: hidden;
+    overflow-y: auto;
     background-attachment: fixed;
     position: relative;
+    padding: 20px 0;
     margin: 0;
-    -webkit-overflow-scrolling: touch;
-    touch-action: manipulation; /* Optimize for touch navigation */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 /* Noise texture overlay */
@@ -99,7 +82,7 @@ body {
 
 .overlay-content {
     text-align: center;
-    padding: 30px;
+    padding: 40px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
@@ -109,7 +92,7 @@ body {
 }
 
 .overlay-content h1 {
-    font-size: 3rem;
+    font-size: 4rem;
     margin-bottom: 20px;
     background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
     -webkit-background-clip: text;
@@ -119,8 +102,8 @@ body {
 }
 
 .overlay-content h2 {
-    font-size: 1.8rem;
-    margin-bottom: 20px;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
     color: var(--accent-primary);
 }
 
@@ -306,523 +289,679 @@ body {
 
 .game-container {
     width: 100%;
-    max-width: var(--game-max-width);
+    max-width: 650px;
     text-align: center;
-    padding: var(--container-padding);
+    padding: 25px;
     position: relative;
     z-index: 2;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    justify-content: space-between;
-    max-height: 100vh;
+    margin-bottom: 30px;
 }
 
 .header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 30px;
     font-weight: 700;
 }
 
 .score-card, .streak-card, .prize-card {
-    padding: 8px 12px;
-    min-width: 70px;
+    background: var(--blur-bg);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    padding: 15px 25px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 100px;
+    position: relative;
+    overflow: hidden;
 }
 
-#score, #streak, #prize {
-    font-size: 22px;
+.score-card:after, .streak-card:after, .prize-card:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+.score-card:after {
+    background: var(--accent-primary);
+}
+
+.streak-card:after {
+    background: var(--warning);
+}
+
+.prize-card:after {
+    background: var(--gold);
+}
+
+.score-label, .streak-label, .prize-label {
+    font-size: 14px;
+    opacity: 0.7;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+#score {
+    font-size: 28px;
+    color: var(--accent-primary);
+    font-weight: 700;
+}
+
+#streak {
+    font-size: 28px;
+    color: var(--warning);
+    font-weight: 700;
+}
+
+#prize {
+    font-size: 28px;
+    color: var(--gold);
+    font-weight: 700;
 }
 
 /* Game area with enhanced effects */
 .game-area {
     width: 100%;
-    height: var(--game-height);
+    height: 350px;
     background: var(--bg-secondary);
     position: relative;
     overflow: hidden;
     border-radius: var(--border-radius);
-    margin-bottom: 10px;
+    margin-bottom: 25px;
     box-shadow: var(--shadow), inset 0 0 30px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
-    transform: translateZ(0); /* Force hardware acceleration */
-    will-change: transform; /* Optimize for animations */
 }
 
-/* Adjust the player and obstacles for smaller game area */
+.game-area:hover {
+    box-shadow: var(--shadow), inset 0 0 40px rgba(0, 0, 0, 0.4), 0 0 15px var(--accent-primary);
+}
+
+/* Parallax backgrounds */
+.stars-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background-image: 
+        radial-gradient(1px 1px at 10px 10px, white 50%, transparent 100%),
+        radial-gradient(1px 1px at 40px 60px, white 50%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 130px 120px, white 50%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 250px 20px, white 50%, transparent 100%),
+        radial-gradient(1px 1px at 300px 180px, white 50%, transparent 100%);
+    background-repeat: repeat;
+    background-size: 350px 350px;
+    opacity: 0.15;
+    animation: starsScroll 60s linear infinite;
+}
+
+@keyframes starsScroll {
+    from { background-position: 0 0; }
+    to { background-position: -350px 0; }
+}
+
+.city-bg {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 120" preserveAspectRatio="none"><path d="M0,0 v50 h40 v-20 h20 v40 h30 v-60 h40 v30 h20 v-10 h30 v30 h10 v-50 h30 v10 h20 v-30 h30 v50 h30 v-20 h20 v-30 h40 v50 h30 v-40 h20 v60 h40 v-50 h30 v30 h40 v-50 h40 v20 h30 v-40 h30 v60 h20 v-30 h30 v10 h30 v-30 h30 v40 h30 v-60 h40 v40 h30 v-20 h20 v30 h30 v-10 h40 v-30 h30 v50 h30 v-30 h40 v0 H1000 V120 H0 Z" fill="%231a1a2e" /></svg>');
+    background-repeat: repeat-x;
+    background-size: 1000px 120px;
+    opacity: 0.5;
+    animation: cityScroll 30s linear infinite;
+}
+
+@keyframes cityScroll {
+    from { background-position: 0 0; }
+    to { background-position: -1000px 0; }
+}
+
+/* Enhanced player shadow */
 #player {
+    width: 40px;
+    height: 60px;
+    position: absolute;
+    bottom: 20px; /* Above ground */
+    left: 50px;
+    border-radius: 12px;
+    transition: transform 0.1s;
+    z-index: 5;
+}
+
+#player:after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 5px;
     width: 30px;
-    height: 45px;
-    bottom: 10px;
-    left: 40px;
-    position: absolute;
+    height: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 50%;
+    z-index: -1;
+    filter: blur(3px);
+    opacity: 0.7;
+    transition: all 0.3s;
 }
 
-.obstacle {
-    width: 22px;
-    height: 30px;
-    position: absolute;
-    bottom: 10px;
+.jump #player:after {
+    opacity: 0.3;
+    transform: scale(0.5);
 }
 
-.special-obstacle {
-    height: 45px;
+.player-character {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.5);
+    position: relative;
+}
+
+/* Character details */
+.player-character:before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 15px;
+    height: 15px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.player-character:after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    width: 30px;
+    height: 5px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.jump {
+    animation: jump 0.5s cubic-bezier(0.5, 0, 0.5, 1);
 }
 
 @keyframes jump {
     0% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(calc(-1 * var(--game-height) * 0.4)) rotate(10deg); }
+    50% { transform: translateY(-150px) rotate(10deg); }
     100% { transform: translateY(0) rotate(0deg); }
 }
 
-.game-panel {
-    margin-top: 15px;
+/* Enhanced ground effect */
+#ground {
+    width: 100%;
+    height: 20px;
+    background: linear-gradient(90deg, var(--bg-primary), var(--accent-tertiary), var(--bg-primary));
+    background-size: 200% 100%;
+    position: absolute;
+    bottom: 0;
+    animation: shiftBackground 15s linear infinite;
+    z-index: 4;
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes shiftBackground {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 0%; }
+}
+
+/* Enhanced obstacle appearance */
+.obstacle {
+    position: absolute;
+    bottom: 20px; /* Sit on ground */
+    right: -50px;
+    width: 30px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--danger), var(--accent-tertiary));
+    border-radius: 10px;
+    animation: moveLeft linear forwards;
+    box-shadow: 0 5px 15px rgba(247, 37, 133, 0.5);
+    z-index: 3;
+    transition: transform 0.2s;
+}
+
+.obstacle:after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    height: 5px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+}
+
+@keyframes moveLeft {
+    0% { right: -50px; transform: rotate(0deg); }
+    100% { right: calc(100% + 50px); transform: rotate(0deg); }
+}
+
+/* Power-up */
+.powerup {
+    position: absolute;
+    bottom: 70px; /* Higher than obstacles */
+    right: -50px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    animation: moveLeft linear forwards, glowPulse 1s ease-in-out infinite alternate;
+    z-index: 2;
+}
+
+.powerup-shield {
+    background: linear-gradient(135deg, var(--success), var(--accent-secondary));
+    box-shadow: 0 0 15px var(--success);
+}
+
+.powerup-speedup {
+    background: linear-gradient(135deg, var(--warning), var(--danger));
+    box-shadow: 0 0 15px var(--warning);
+}
+
+.powerup-slowdown {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary));
+    box-shadow: 0 0 15px var(--accent-primary);
+}
+
+@keyframes glowPulse {
+    0% { transform: scale(1) rotate(0deg); }
+    100% { transform: scale(1.1) rotate(180deg); }
+}
+
+/* Shield effect */
+.shield-active .player-character {
+    box-shadow: 0 0 20px var(--success);
+}
+
+.shield-active:before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 2px solid var(--success);
+    border-radius: 15px;
+    opacity: 0.7;
+    animation: shieldPulse 1s ease-in-out infinite;
+}
+
+@keyframes shieldPulse {
+    0% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.1); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 0.7; }
+}
+
+/* Speed boost effect */
+.speed-boost .player-character {
+    box-shadow: 0 0 20px var(--warning);
+}
+
+.speed-boost:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -20px;
+    height: 2px;
+    width: 20px;
+    background: linear-gradient(to left, var(--warning), transparent);
+    opacity: 0.7;
+    animation: speedLines 0.3s linear infinite;
+}
+
+@keyframes speedLines {
+    0% { opacity: 0.7; width: 20px; }
+    100% { opacity: 0; width: 30px; }
+}
+
+/* Power-up indicator */
+#powerup-indicator {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 5px 10px;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    backdrop-filter: blur(5px);
+    z-index: 5;
+}
+
+#powerup-indicator.hidden {
+    display: none;
+}
+
+#powerup-name {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: var(--success);
+}
+
+#powerup-timer {
+    width: 100%;
+    height: 3px;
+    background: var(--success);
+    border-radius: 3px;
+    transition: width 0.1s linear;
 }
 
 .controls {
     display: flex;
-    gap: 10px;
+    justify-content: center;
     align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
 }
 
-button {
-    background-color: var(--primary-color);
-    color: var(--text-color);
+#start-btn {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
     border: none;
-    padding: 0.7rem 1.5rem;
-    border-radius: 4px;
+    padding: 12px 30px;
+    font-size: 18px;
+    font-weight: 700;
+    border-radius: var(--border-radius);
     cursor: pointer;
-    font-weight: bold;
-    font-family: 'Outfit', sans-serif;
-    transition: all 0.2s ease;
+    transition: all 0.3s;
+    box-shadow: 0 8px 20px rgba(76, 201, 240, 0.4);
     text-transform: uppercase;
     letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
 }
 
-button:hover {
-    background-color: var(--hover-color);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
+#start-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s ease;
 }
 
-button:active {
+#start-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 25px rgba(76, 201, 240, 0.6);
+}
+
+#start-btn:hover:before {
+    opacity: 1;
+}
+
+#start-btn:active {
     transform: translateY(0);
+    box-shadow: 0 5px 15px rgba(76, 201, 240, 0.4);
 }
 
-.icon-btn {
-    padding: 0.7rem;
-    font-size: 1.3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Mobile optimization - better touch targets */
-@media (max-width: 767px) {
-    button {
-        padding: 0.8rem 1.6rem;
-        min-height: 44px;
-        min-width: 44px;
-    }
-    
-    .icon-btn {
-        padding: 0.8rem;
-        font-size: 1.4rem;
-    }
-    
-    .controls {
-        gap: 15px;
-    }
-    
-    .toggle label {
-        height: 30px;
-    }
-    
-    .toggle label:before {
-        height: 22px;
-        width: 22px;
-    }
-    
-    .character-option {
-        width: 30px;
-        height: 30px;
-    }
+#start-btn:disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .instructions {
-    font-size: 13px;
-    line-height: 1.4;
-    padding: 10px;
-    margin: 0 auto 10px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    font-size: 16px;
+    max-width: 450px;
+    margin: 0 auto 30px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px 20px;
+    border-radius: var(--border-radius);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.footer {
-    margin-top: 5px;
-    padding: 8px;
+.key {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    padding: 3px 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    margin: 0 3px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-/* Compact fixed position double jump indicator */
-.floating-indicator {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    z-index: 1000;
+.powerup-text {
+    color: var(--success);
+    font-weight: 700;
+    text-shadow: 0 0 5px rgba(6, 214, 160, 0.5);
 }
 
-.double-jump-indicator {
-    padding: 8px 12px;
+/* Improved milestone popup with glow effect */
+#milestone-popup {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--text-primary);
+    padding: 15px 30px;
+    border-radius: 30px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    backdrop-filter: blur(5px);
+    animation: none;
+    z-index: 50;
+    text-shadow: 0 0 10px var(--accent-primary);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Mobile optimizations - Enhance for better fit */
-@media (max-height: 700px) {
-    :root {
-        --game-height: min(220px, 35vh);
-        --border-radius: 12px;
-        --container-padding: 8px;
+#milestone-popup.show {
+    animation: popupShow 1.5s ease-in-out forwards;
+}
+
+@keyframes popupShow {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+}
+
+/* Enhanced particle effect for jumping */
+.particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--accent-primary);
+    border-radius: 50%;
+    animation: particleFade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    box-shadow: 0 0 10px rgba(76, 201, 240, 0.7);
+    z-index: 3;
+}
+
+@keyframes particleFade {
+    0% { 
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+        filter: hue-rotate(0deg);
+    }
+    100% { 
+        opacity: 0;
+        transform: translate(var(--tx, 0), var(--ty, 20px)) scale(0);
+        filter: hue-rotate(90deg);
+    }
+}
+
+/* Win particles */
+.win-particle {
+    position: absolute;
+    border-radius: 50%;
+    animation: winParticle 1.5s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+    z-index: 10;
+}
+
+@keyframes winParticle {
+    0% {
+        opacity: 1;
+        transform: scale(0) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1) rotate(180deg);
+    }
+}
+
+/* Special obstacle */
+.special-obstacle {
+    height: 60px;
+    border-radius: 50% 50% 10px 10px;
+    background: linear-gradient(135deg, #f72585, #7209b7);
+}
+
+/* Dynamically injected CSS */
+.game-start {
+    animation: gameStart 0.5s ease-out;
+}
+
+@keyframes gameStart {
+    0% { transform: scale(0.8); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.game-over {
+    animation: gameOver 0.5s ease-out;
+}
+
+@keyframes gameOver {
+    0%, 20%, 40%, 60%, 80% { background-color: rgba(247, 37, 133, 0.5); }
+    10%, 30%, 50%, 70%, 90% { background-color: inherit; }
+}
+
+.win-animation {
+    animation: winPulse 0.5s ease-out infinite alternate;
+}
+
+@keyframes winPulse {
+    0% { transform: scale(1); filter: hue-rotate(0deg); }
+    100% { transform: scale(1.2); filter: hue-rotate(360deg); }
+}
+
+.background-effect {
+    position: absolute;
+    width: var(--size, 80px);
+    height: var(--size, 80px);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(76, 201, 240, 0.1) 0%, rgba(58, 12, 163, 0) 70%);
+    pointer-events: none;
+    opacity: 0;
+    animation: bgEffect 3s ease-out forwards;
+}
+
+@keyframes bgEffect {
+    0% { transform: scale(0); opacity: 0; }
+    50% { opacity: 0.2; }
+    100% { transform: scale(3); opacity: 0; }
+}
+
+/* Star twinkle effect */
+.stars-bg:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(2px 2px at 50px 30px, white 100%, transparent 100%),
+        radial-gradient(2px 2px at 100px 80px, white 100%, transparent 100%),
+        radial-gradient(2px 2px at 150px 50px, white 100%, transparent 100%),
+        radial-gradient(2px 2px at 200px 100px, white 100%, transparent 100%);
+    background-repeat: repeat;
+    background-size: 350px 350px;
+    opacity: 0;
+    animation: twinkle 8s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 0.3; }
+}
+
+/* Mobile adjustments */
+@media (max-width: 700px) {
+    body {
+        padding: 10px 0;
     }
     
-    .game-container {
-        justify-content: flex-start;
-        padding-top: 10px;
+    .game-area {
+        height: 250px;
     }
     
     .header {
-        margin-bottom: 8px;
+        font-size: 14px;
     }
     
     .score-card, .streak-card, .prize-card {
-        padding: 5px 8px;
-        min-width: 60px;
+        padding: 8px 12px;
+        min-width: 80px;
     }
     
     #score, #streak, #prize {
-        font-size: 18px;
+        font-size: 22px;
     }
     
-    .score-label, .streak-label, .prize-label {
-        font-size: 11px;
+    .overlay-content h1 {
+        font-size: 2.5rem;
+    }
+    
+    .overlay-content h2 {
+        font-size: 1.8rem;
+    }
+    
+    .overlay-content {
+        padding: 25px;
     }
     
     .game-panel {
-        padding: 6px 10px;
-        margin-bottom: 8px;
+        flex-direction: column;
+        gap: 15px;
     }
     
-    .instructions {
-        font-size: 11px;
-        padding: 6px 10px;
-        margin-bottom: 8px;
-    }
-    
-    .footer {
-        padding: 6px;
-        margin-top: 3px;
-        font-size: 0.8rem;
-    }
-
-    .glow-btn {
-        padding: 12px 30px;
-        font-size: 1rem;
-        margin: 15px 0;
-    }
-
-    .secondary-btn {
-        padding: 10px 24px;
-        font-size: 0.9rem;
-    }
-
-    .character-option {
-        width: 35px;
-        height: 50px;
-    }
-
-    .overlay-content {
-        padding: 20px;
-    }
-
-    .overlay-content h1 {
-        font-size: 2.5rem;
-        margin-bottom: 15px;
-    }
-
-    .overlay-content h2 {
-        font-size: 1.8rem;
-        margin-bottom: 20px;
-    }
-}
-
-/* Very small screens */
-@media (max-height: 600px) {
-    :root {
-        --game-height: min(180px, 30vh);
-        --container-padding: 5px;
-    }
-    
-    .game-container {
-        justify-content: flex-start;
-        padding-top: 5px;
-    }
-    
-    .player-character:before {
-        width: 10px;
-        height: 10px;
-        top: 5px;
-    }
-    
-    .instructions p {
-        margin: 3px 0;
-    }
-
-    #player {
-        width: 25px;
-        height: 40px;
-    }
-    
-    .obstacle {
-        width: 20px;
-        height: 28px;
-    }
-    
-    .special-obstacle {
-        height: 40px;
-    }
-
-    .overlay-content h1 {
-        font-size: 2rem;
-    }
-    
-    .overlay-content h2 {
-        font-size: 1.5rem;
-    }
-
-    .glow-btn {
-        padding: 10px 25px;
-        font-size: 0.9rem;
-    }
-}
-
-/* Ultra small screens */
-@media (max-height: 500px) {
-    :root {
-        --game-height: min(160px, 35vh);
-        --container-padding: 3px;
-        --border-radius: 8px;
-    }
-    
-    .game-container {
-        justify-content: flex-start;
-        padding-top: 2px;
-    }
-
-    .key {
-        padding: 2px 6px;
-        font-size: 11px;
-    }
-    
-    .instructions {
-        max-width: 100%;
-        font-size: 10px;
-    }
-
-    .game-container {
-        padding: var(--container-padding);
-    }
-
-    .header {
-        margin-bottom: 5px;
-    }
-
-    .game-area {
-        margin-bottom: 5px;
-    }
-
-    #player {
-        width: 22px;
-        height: 35px;
-    }
-    
-    .obstacle {
-        width: 18px; 
-        height: 25px;
-    }
-    
-    .special-obstacle {
-        height: 35px;
-    }
-}
-
-/* Mobile width adjustments - Enhanced for better fit */
-@media (max-width: 480px) {
-    :root {
-        --game-max-width: 98%;
-    }
-    
-    .floating-indicator {
-        top: 5px;
-        right: 5px;
-    }
-    
-    .game-container {
-        padding: var(--container-padding);
-    }
-
-    .achievement {
-        bottom: 10px;
-        right: 10px;
-        padding: 10px;
-        max-width: 250px;
-    }
-
-    .achievement-icon {
-        width: 30px;
-        height: 30px;
-        font-size: 16px;
-    }
-
-    .overlay-content {
-        width: 95%;
-        padding: 15px;
-    }
-
-    .overlay-content h1 {
-        font-size: 2rem;
-    }
-
-    .overlay-content h2 {
-        font-size: 1.5rem;
-    }
-
-    .settings-group {
-        margin-bottom: 15px;
-    }
-
-    .settings-group label {
-        font-size: 0.9rem;
-    }
-
-    .score-card, .streak-card, .prize-card {
-        padding: 5px 8px;
-        min-width: 60px;
-    }
-}
-
-/* Add portrait mode warning for mobile */
-@media (max-width: 767px) and (orientation: portrait) {
-    .portrait-warning {
-        display: block;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background-color: rgba(255, 159, 28, 0.8);
-        color: var(--text-primary);
-        text-align: center;
-        padding: 5px;
-        font-size: 12px;
-        z-index: 999;
-    }
-}
-
-@media (min-width: 768px), (orientation: landscape) {
-    .portrait-warning {
-        display: none;
-    }
-}
-
-/* Add landscape optimization */
-@media (max-width: 767px) and (orientation: landscape) and (max-height: 500px) {
-    :root {
-        --game-height: min(140px, 60vh);
-    }
-    
-    .game-container {
-        padding: 3px;
-        justify-content: flex-start;
-    }
-    
-    .header {
-        margin-bottom: 3px;
-    }
-    
-    .game-area {
-        margin-bottom: 3px;
-    }
-    
-    .instructions {
-        font-size: 10px;
-        padding: 3px 5px;
-        margin-bottom: 3px;
-    }
-    
-    .footer {
-        margin-top: 3px;
-        padding: 5px;
-        font-size: 0.7rem;
-    }
-    
-    #player {
-        width: 20px;
-        height: 30px;
-    }
-    
-    .obstacle {
-        width: 15px;
-        height: 20px;
-    }
-    
-    .special-obstacle {
-        height: 30px;
-    }
-}
-
-/* Fix for notched phones - prevent content from being hidden under the notch */
-@supports (padding: max(0px)) {
-    .game-container {
-        padding-left: max(var(--container-padding), env(safe-area-inset-left));
-        padding-right: max(var(--container-padding), env(safe-area-inset-right));
-        padding-bottom: max(5px, env(safe-area-inset-bottom));
-    }
-}
-
-/* Add more responsive fixes for specific game elements */
-@media (max-width: 320px) {
-    :root {
-        --game-height: min(140px, 30vh);
-    }
-    
-    .header {
-        flex-wrap: wrap;
+    .double-jump-status {
+        width: 100%;
         justify-content: center;
     }
     
-    .score-card, .streak-card, .prize-card {
-        padding: 2px 5px;
-        min-width: 50px;
-        margin: 2px;
+    .controls {
+        width: 100%;
     }
     
-    #score, #streak, #prize {
-        font-size: 16px;
+    #start-btn {
+        flex: 1;
     }
     
-    .score-label, .streak-label, .prize-label {
-        font-size: 10px;
+    .instructions {
+        margin-bottom: 20px;
+        font-size: 14px;
+        padding: 12px 15px;
     }
     
-    .overlay-content h1 {
-        font-size: 1.5rem;
-    }
-    
-    .overlay-content h2 {
-        font-size: 1.2rem;
-    }
-    
-    .glow-btn {
-        padding: 8px 20px;
-        font-size: 0.8rem;
+    .footer {
+        margin-top: 15px;
     }
 }
 
@@ -950,178 +1089,159 @@ button:active {
 /* Achievements popup */
 .achievement {
     position: fixed;
-    top: -100px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(15, 15, 30, 0.9);
-    border: 1px solid var(--primary-color);
-    border-radius: 8px;
-    padding: 10px 15px;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--text-primary);
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 5px solid var(--accent-primary);
     display: flex;
     align-items: center;
-    z-index: 101;
-    box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
-    transition: top 0.5s ease;
-    width: 300px;
-    max-width: 90%;
-    cursor: pointer;
-    position: relative;
-}
-
-.close-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: transparent;
-    border: none;
-    color: var(--text-color);
-    font-size: 1.5rem;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-}
-
-.close-btn:hover {
-    opacity: 1;
-}
-
-.achievement:after {
-    content: '';
+    transform: translateX(120%);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 100;
+    max-width: 300px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(5px);
 }
 
 .achievement.show {
-    top: 20px;
+    transform: translateX(0);
 }
 
 .achievement-icon {
-    color: var(--accent-color);
-    font-size: 2rem;
     margin-right: 15px;
+    background: var(--accent-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.achievement-content {
+    flex: 1;
 }
 
 .achievement-title {
     font-weight: bold;
-    font-size: 0.9rem;
+    margin-bottom: 5px;
 }
 
 .achievement-description {
-    font-size: 0.8rem;
-    opacity: 0.9;
+    font-size: 12px;
+    color: var(--text-secondary);
 }
 
-/* Combo system */
-.combo-indicator {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: var(--accent-color);
-    text-shadow: 0 0 10px rgba(245, 158, 11, 0.7);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+/* Game panel with controls and indicators */
+.game-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    padding: 15px 20px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    flex-wrap: wrap;
 }
 
-.combo-indicator.show {
-    opacity: 1;
-    transform: translate(-50%, -70%);
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
 }
 
-/* Star twinkle effect */
-.stars-bg:after {
+#start-btn {
+    flex: 1;
+    max-width: 250px;
+}
+
+/* Modern double jump indicator with fixed position */
+.floating-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.double-jump-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 30px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 15px var(--accent-primary);
+    transition: all 0.3s ease;
+    animation: pulse-glow 2s infinite alternate;
+}
+
+@keyframes pulse-glow {
+    0% { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 15px var(--accent-primary); }
+    100% { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 25px var(--accent-primary); }
+}
+
+.double-jump-indicator span {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+.double-jump-available {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--success), #00ffaa);
+    box-shadow: 0 0 15px var(--success);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.double-jump-available:after {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-        radial-gradient(2px 2px at 50px 30px, white 100%, transparent 100%),
-        radial-gradient(2px 2px at 100px 80px, white 100%, transparent 100%),
-        radial-gradient(2px 2px at 150px 50px, white 100%, transparent 100%),
-        radial-gradient(2px 2px at 200px 100px, white 100%, transparent 100%);
-    background-repeat: repeat;
-    background-size: 350px 350px;
-    opacity: 0;
-    animation: twinkle 8s ease-in-out infinite alternate;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border-radius: 50%;
+    border: 2px solid var(--success);
+    opacity: 0.5;
+    animation: pulse 1.5s infinite;
 }
 
-@keyframes twinkle {
-    0%, 100% { opacity: 0; }
-    50% { opacity: 0.3; }
+.double-jump-used {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #888, #444);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
 }
 
-/* Mobile adjustments */
-@media (max-width: 700px) {
-    body {
-        padding: 10px 0;
-    }
-    
-    .game-area {
-        height: 250px;
-    }
-    
-    .header {
-        font-size: 14px;
-    }
-    
-    .score-card, .streak-card, .prize-card {
-        padding: 8px 12px;
-        min-width: 80px;
-    }
-    
-    #score, #streak, #prize {
-        font-size: 22px;
-    }
-    
-    .overlay-content h1 {
-        font-size: 2.5rem;
-    }
-    
-    .overlay-content h2 {
-        font-size: 1.8rem;
-    }
-    
-    .overlay-content {
-        padding: 25px;
-    }
-    
-    .game-panel {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .double-jump-status {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .controls {
-        width: 100%;
-    }
-    
-    #start-btn {
-        flex: 1;
-    }
-    
-    .instructions {
-        margin-bottom: 20px;
-        font-size: 14px;
-        padding: 12px 15px;
-    }
-    
-    .footer {
-        margin-top: 15px;
-    }
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.5); opacity: 0.2; }
+    100% { transform: scale(1); opacity: 0.5; }
+}
+
+/* Remove the old double-jump-status styles */
+.double-jump-status {
+    display: none;
 }
 
 /* Footer */
@@ -1158,870 +1278,44 @@ button:active {
     border-radius: 4px;
 }
 
-/* Portrait mode warning */
-.portrait-warning {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.85);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    flex-direction: column;
-    text-align: center;
-    padding: 20px;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-.portrait-warning div {
-    max-width: 300px;
-    padding: 20px;
-    background-color: rgba(15, 15, 30, 0.7);
-    border-radius: 8px;
-    border: 1px solid var(--primary-color);
-    box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
-}
-
-.portrait-warning h2 {
-    margin-bottom: 10px;
-    color: var(--accent-color);
-}
-
-.portrait-warning p {
-    margin-bottom: 20px;
-}
-
-.portrait-warning button {
-    margin-top: 10px;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* Overlay and UI elements */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(6, 6, 20, 0.9);
-    z-index: 100;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.overlay-content {
-    background-color: var(--ui-element-bg);
-    border: 1px solid var(--ui-element-border);
-    border-radius: 12px;
-    padding: 2rem;
-    text-align: center;
-    max-width: 90%;
-    width: 450px;
-    box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
-}
-
-.hidden {
-    display: none;
-}
-
-h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-    text-shadow: 0 0 10px rgba(124, 58, 237, 0.7);
-}
-
-h2 {
-    font-size: 2.2rem;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-}
-
-p {
-    margin-bottom: 1rem;
-}
-
-.tagline {
-    font-size: 1.2rem;
-    color: var(--accent-color);
-    margin-bottom: 1.5rem;
-}
-
-.disclaimer {
-    font-size: 0.8rem;
-    opacity: 0.7;
-    margin-bottom: 2rem;
-}
-
-/* Buttons */
-.glow-btn {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    font-family: 'Outfit', sans-serif;
-    font-size: 1rem;
-    font-weight: bold;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
-    margin-top: 1rem;
-}
-
-.glow-btn:hover, .glow-btn:focus {
-    background-color: var(--primary-color-dark);
-    box-shadow: 0 0 15px rgba(124, 58, 237, 0.8);
-    transform: translateY(-2px);
-}
-
-.secondary-btn {
-    background-color: transparent;
-    color: var(--text-color);
-    border: 1px solid var(--primary-color);
-    padding: 0.8rem 1.5rem;
-    font-family: 'Outfit', sans-serif;
-    font-size: 1rem;
-    font-weight: bold;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 1rem;
-}
-
-.secondary-btn:hover, .secondary-btn:focus {
-    background-color: rgba(124, 58, 237, 0.2);
-    transform: translateY(-2px);
-}
-
-.icon-btn {
-    background-color: transparent;
-    color: var(--text-color);
-    border: 1px solid var(--primary-color);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-left: 10px;
-}
-
-.icon-btn:hover, .icon-btn:focus {
-    background-color: rgba(124, 58, 237, 0.2);
-    transform: translateY(-2px);
-}
-
-/* Game container */
-.game-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-    max-width: 800px; /* Reduced from 1000px to make game more compact */
-    height: 90vh; /* Reduced from 100vh to allow some margin */
-    max-height: 700px; /* Added max-height for smaller screens */
-    position: relative;
-    margin: 0 auto;
-    padding: 10px;
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-bottom: 10px;
-    z-index: 5;
-}
-
-.score-card, .streak-card, .prize-card {
-    background-color: var(--ui-element-bg);
-    border: 1px solid var(--ui-element-border);
-    border-radius: 8px;
-    padding: 8px 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 80px;
-}
-
-.score-label, .streak-label, .prize-label {
-    font-size: 0.7rem;
-    opacity: 0.7;
-}
-
-#score, #streak, #prize {
-    font-size: 1.1rem;
-    font-weight: bold;
-}
-
-/* Game area */
-.game-area {
-    position: relative;
-    width: 100%;
-    height: 65%; /* Reduced from 70% to make more compact */
-    background-color: var(--dark-bg);
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid var(--ui-element-border);
-}
-
-#ground {
+/* Combo system */
+.combo-indicator {
     position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 20px;
-    background: linear-gradient(to bottom, #2E1065, #4C1D95);
-}
-
-#player {
-    position: absolute;
-    bottom: 20px;
-    left: 50px;
-    width: 30px;
-    height: 30px;
-    border-radius: 15px;
-    z-index: 5;
-}
-
-.player-character {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background-color: var(--primary-color);
-    box-shadow: 0 0 10px rgba(124, 58, 237, 0.8);
-}
-
-.obstacle {
-    position: absolute;
-    bottom: 20px;
-    width: 20px;
-    background-color: #E11D48;
-    border-radius: 4px 4px 0 0;
-}
-
-.powerup {
-    position: absolute;
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    z-index: 3;
-    animation: glow 1.5s infinite alternate;
-}
-
-@keyframes glow {
-    from {
-        box-shadow: 0 0 5px currentColor;
-    }
-    to {
-        box-shadow: 0 0 15px currentColor;
-    }
-}
-
-.shield-powerup {
-    background-color: #3B82F6;
-    color: #3B82F6;
-}
-
-.slow-powerup {
-    background-color: #10B981;
-    color: #10B981;
-}
-
-.points-powerup {
-    background-color: #F59E0B;
-    color: #F59E0B;
-}
-
-/* Background elements */
-.stars-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 70%;
-    background: radial-gradient(circle at top right, rgba(124, 58, 237, 0.1), transparent 70%),
-                radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent 70%);
-    opacity: 0.7;
-}
-
-.city-bg {
-    position: absolute;
-    bottom: 20px;
-    width: 100%;
-    height: 40px;
-    background-image: url('city-skyline.png');
-    background-size: auto 100%;
-    background-repeat: repeat-x;
-    opacity: 0.5;
-}
-
-.sun, .moon {
-    position: absolute;
-    border-radius: 50%;
-    transition: all 1s ease;
-}
-
-.sun {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(to bottom right, #FCD34D, #F59E0B);
-    box-shadow: 0 0 20px rgba(245, 158, 11, 0.7);
-    top: 30px;
-    right: -50px;
-}
-
-.moon {
-    width: 35px;
-    height: 35px;
-    background: linear-gradient(to bottom right, #E5E7EB, #D1D5DB);
-    box-shadow: 0 0 20px rgba(229, 231, 235, 0.5);
-    top: 30px;
-    left: -50px;
-}
-
-.night-mode .sun {
-    right: -50px;
-}
-
-.night-mode .moon {
-    left: 30px;
-}
-
-.day-mode .sun {
-    right: 30px;
-}
-
-.day-mode .moon {
-    left: -50px;
-}
-
-.night-mode {
-    background-color: #03030A;
-}
-
-.night-mode .game-area {
-    background-color: #020208;
-}
-
-/* Game panel */
-.game-panel {
-    width: 100%;
-    margin-top: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.controls {
-    display: flex;
-    gap: 10px;
-}
-
-#start-btn {
-    background-color: var(--secondary-color);
-    color: white;
-    border: none;
-    padding: 0.7rem 1.5rem;
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.9rem;
-    font-weight: bold;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-#start-btn:hover, #start-btn:focus {
-    background-color: #059669;
-    transform: translateY(-2px);
-}
-
-/* Instructions */
-.instructions {
-    margin-top: 15px;
-    text-align: center;
-    font-size: 0.85rem;
-    opacity: 0.8;
-    line-height: 1.5;
-}
-
-.key {
-    background-color: rgba(124, 58, 237, 0.2);
-    border: 1px solid rgba(124, 58, 237, 0.5);
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-size: 0.8rem;
-}
-
-.powerup-text {
-    color: var(--accent-color);
-}
-
-/* Double jump indicator */
-.floating-indicator {
-    position: absolute;
-    top: 60px;
-    left: 15px;
-    z-index: 5;
-}
-
-.double-jump-indicator {
-    display: flex;
-    align-items: center;
-    background-color: rgba(15, 15, 30, 0.7);
-    border: 1px solid rgba(124, 58, 237, 0.3);
-    border-radius: 20px;
-    padding: 5px 12px;
-    font-size: 0.8rem;
-}
-
-.double-jump-available {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: var(--primary-color);
-    margin-left: 8px;
-    box-shadow: 0 0 8px var(--primary-color);
-}
-
-/* Power-up indicator */
-#powerup-indicator {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background-color: rgba(15, 15, 30, 0.7);
-    border: 1px solid rgba(124, 58, 237, 0.3);
-    border-radius: 20px;
-    padding: 5px 12px;
-    font-size: 0.8rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-#powerup-name {
-    margin-bottom: 5px;
-}
-
-#powerup-timer {
-    width: 100%;
-    height: 4px;
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
-    overflow: hidden;
-}
-
-#powerup-timer::before {
-    content: '';
-    display: block;
-    height: 100%;
-    width: 100%;
-    background-color: var(--primary-color);
-    animation: timer 5s linear forwards;
-}
-
-@keyframes timer {
-    from { width: 100%; }
-    to { width: 0%; }
-}
-
-/* Game Over Screen */
-.score-summary {
-    margin: 20px 0;
-    background-color: rgba(15, 15, 30, 0.5);
-    border-radius: 8px;
-    padding: 15px;
-}
-
-.summary-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-}
-
-.summary-item:last-child {
-    margin-bottom: 0;
-    padding-top: 8px;
-    border-top: 1px solid rgba(124, 58, 237, 0.3);
-}
-
-.summary-value {
-    font-weight: bold;
-}
-
-.high-score-value {
-    color: var(--accent-color);
-}
-
-/* Settings screen */
-.settings-group {
-    margin-bottom: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-select {
-    background-color: rgba(15, 15, 30, 0.7);
-    border: 1px solid rgba(124, 58, 237, 0.3);
-    color: var(--text-color);
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-family: 'Outfit', sans-serif;
-}
-
-.character-selection {
-    display: flex;
-    gap: 10px;
-}
-
-.character-option {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s ease;
-}
-
-.character-option.selected {
-    border-color: var(--text-color);
-    transform: scale(1.2);
-}
-
-.character-blue {
-    background-color: var(--primary-color);
-    box-shadow: 0 0 8px rgba(124, 58, 237, 0.5);
-}
-
-.character-red {
-    background-color: #E11D48;
-    box-shadow: 0 0 8px rgba(225, 29, 72, 0.5);
-}
-
-.character-gold {
-    background-color: #F59E0B;
-    box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
-}
-
-/* Toggle switches */
-.toggle {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 24px;
-}
-
-.toggle input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.toggle label {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(15, 15, 30, 0.7);
-    border: 1px solid rgba(124, 58, 237, 0.3);
-    border-radius: 24px;
-    transition: .4s;
-}
-
-.toggle label:before {
-    position: absolute;
-    content: "";
-    height: 16px;
-    width: 16px;
-    left: 4px;
-    bottom: 3px;
-    background-color: white;
-    border-radius: 50%;
-    transition: .4s;
-}
-
-.toggle input:checked + label {
-    background-color: var(--primary-color);
-}
-
-.toggle input:checked + label:before {
-    transform: translateX(25px);
-}
-
-/* Milestone popup */
-#milestone-popup {
-    position: absolute;
+    top: 50%;
     left: 50%;
-    top: 40%;
-    transform: translate(-50%, -50%);
-    background-color: rgba(15, 15, 30, 0.8);
-    border: 2px solid var(--accent-color);
-    border-radius: 8px;
-    padding: 10px 20px;
-    color: var(--accent-color);
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-align: center;
-    z-index: 10;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-#milestone-popup.show {
-    opacity: 1;
-    animation: popupAnimation 2s forwards;
-}
-
-@keyframes popupAnimation {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-    30% { transform: translate(-50%, -50%) scale(1); }
-    80% { opacity: 1; }
-    100% { opacity: 0; }
-}
-
-/* Noise overlay for retro effect */
-.noise-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('noise.png');
-    opacity: 0.03;
+    transform: translate(-50%, -50%) scale(0);
+    color: var(--accent-primary);
+    font-size: 3rem;
+    font-weight: 700;
+    text-shadow: 0 0 10px var(--accent-secondary);
     pointer-events: none;
-    z-index: 999;
+    animation: none;
+    z-index: 10;
 }
 
-/* Footer */
-.footer {
-    margin-top: auto;
-    text-align: center;
-    font-size: 0.8rem;
-    opacity: 0.7;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 0;
+.combo-indicator.show {
+    animation: comboShow 1s ease-out forwards;
 }
 
-.footer a {
-    color: var(--primary-color);
-    text-decoration: none;
+@keyframes comboShow {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    30% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    70% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
 }
 
-.footer-icon {
-    width: 20px;
-    height: 20px;
-    margin-left: 8px;
-}
-
-/* Responsive design */
-@media (max-height: 700px) {
-    .game-container {
-        height: 95vh;
-        max-height: none;
+/* Fix scrolling on mobile */
+@media (max-width: 480px) {
+    html, body {
+        height: auto;
+        overflow-x: hidden;
+    }
+    
+    body {
         padding: 10px;
     }
     
-    .game-area {
-        height: 60%;
-    }
-    
-    h1 {
-        font-size: 2.5rem;
-    }
-    
-    h2 {
-        font-size: 1.8rem;
-    }
-    
-    .instructions {
-        margin-top: 10px;
-        font-size: 0.75rem;
-    }
-    
-    .score-card, .streak-card, .prize-card {
-        padding: 6px 12px;
-    }
-    
-    #score, #streak, #prize {
-        font-size: 1rem;
-    }
-    
-    .footer {
-        padding: 5px 0;
-    }
-}
-
-@media (max-height: 600px) {
     .game-container {
-        height: 98vh;
-    }
-    
-    .game-area {
-        height: 55%;
-    }
-    
-    .header {
-        margin-bottom: 5px;
-    }
-    
-    .score-card, .streak-card, .prize-card {
-        padding: 4px 10px;
-        min-width: 70px;
-    }
-    
-    .score-label, .streak-label, .prize-label {
-        font-size: 0.65rem;
-    }
-    
-    #score, #streak, #prize {
-        font-size: 0.9rem;
-    }
-    
-    .instructions p {
-        margin-bottom: 3px;
-    }
-}
-
-@media (max-width: 600px) {
-    .game-container {
-        max-width: 100%;
-        padding: 5px 10px;
-    }
-    
-    .overlay-content {
-        padding: 1.5rem;
-    }
-    
-    h1 {
-        font-size: 2.2rem;
-    }
-    
-    h2 {
-        font-size: 1.6rem;
-    }
-    
-    .score-card, .streak-card, .prize-card {
-        min-width: 70px;
-    }
-    
-    .double-jump-indicator {
-        padding: 4px 10px;
-        font-size: 0.75rem;
-    }
-    
-    .double-jump-available {
-        width: 10px;
-        height: 10px;
-    }
-}
-
-@media (max-width: 400px) {
-    .score-card, .streak-card, .prize-card {
-        min-width: 60px;
-        padding: 4px 8px;
-    }
-    
-    .score-label, .streak-label, .prize-label {
-        font-size: 0.6rem;
-    }
-    
-    #score, #streak, #prize {
-        font-size: 0.85rem;
-    }
-    
-    .game-panel {
-        margin-top: 10px;
-    }
-    
-    #start-btn {
-        padding: 0.6rem 1.2rem;
-        font-size: 0.85rem;
-    }
-    
-    .instructions {
-        font-size: 0.7rem;
-    }
-}
-
-/* Improved portrait mode handling */
-@media (orientation: portrait) {
-    .portrait-warning {
-        display: flex;
-        z-index: 1000;
-    }
-    
-    /* Make the game playable in portrait mode as fallback */
-    .game-container {
-        max-width: 100%;
-        height: auto;
-        min-height: 100vh;
-    }
-    
-    .game-area {
-        height: 40vh;
-        min-height: 300px;
-    }
-    
-    .header {
-        display: flex;
-        justify-content: space-around;
-        width: 100%;
-    }
-    
-    .score-card, .streak-card, .prize-card {
-        min-width: 80px;
-    }
-    
-    .instructions {
-        margin-top: 15px;
-    }
-    
-    /* Only show the warning on smaller mobile devices */
-    @media (min-width: 768px) {
-        .portrait-warning {
-            display: none;
-        }
-    }
-}
-
-/* Responsive adjustments for different device types */
-@media (min-width: 768px) and (max-width: 1024px) {
-    .game-container {
-        max-width: 90%;
-    }
-}
-
-@media (min-width: 1024px) {
-    .game-container {
-        max-width: 800px;
-        height: 700px;
-    }
-    
-    .game-area {
-        height: 500px;
-    }
-}
-
-/* High-DPI screens */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-    .noise-overlay {
-        opacity: 0.02;
+        padding: 15px;
     }
 } 
