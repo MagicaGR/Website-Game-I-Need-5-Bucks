@@ -8,12 +8,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const prizeAmountEl = document.querySelector('.prize-amount');
     const gameAreaEl = document.querySelector('.game-area');
     
+    console.log("Game initialized");
+    console.log("Elements found:", {
+        score: scoreEl, 
+        currentColor: currentColorEl, 
+        targetZone: targetZoneEl,
+        colorStrip: colorStripEl,
+        startBtn: startBtn,
+        prizeAmount: prizeAmountEl,
+        gameArea: gameAreaEl
+    });
+    
     // Game variables
     let score = 0;
     let targetColor = null;
     let currentColor = null;
     let gameActive = false;
-    let colorChangeInterval = null;
     let colorChangeSpeed = 1000; // ms
     let animationFrame = null;
     let colorPosition = 0;
@@ -40,7 +50,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Start the game
     function startGame() {
-        if (gameActive) return;
+        console.log("startGame called");
+        if (gameActive) {
+            // If already running, reset the game
+            resetGame();
+            return;
+        }
         
         // Reset game state
         score = 0;
@@ -60,12 +75,33 @@ document.addEventListener('DOMContentLoaded', () => {
         // Initialize the color strip
         initColorStrip();
         
+        // Initialize the current color immediately
+        updateCurrentColor();
+        
         // Start color animation
         startColorAnimation();
+        
+        console.log("Game started with target color:", targetColor);
+    }
+    
+    // Reset the game
+    function resetGame() {
+        console.log("Resetting game");
+        
+        // Cancel animation if running
+        if (animationFrame) {
+            cancelAnimationFrame(animationFrame);
+            animationFrame = null;
+        }
+        
+        // Reset game state and start again
+        gameActive = false;
+        startGame();
     }
     
     // Start color animation
     function startColorAnimation() {
+        console.log("Starting color animation");
         let startTime = null;
         let lastColorChange = 0;
         
@@ -94,24 +130,30 @@ document.addEventListener('DOMContentLoaded', () => {
         colorPosition = (colorPosition + 1) % colors.length;
         currentColor = colors[colorPosition];
         currentColorEl.style.backgroundColor = currentColor;
+        console.log("Current color updated to:", currentColor);
     }
     
     // Handle tap/click on the game area
     function handleTap() {
+        console.log("Tap detected, gameActive:", gameActive);
         if (!gameActive) return;
         
+        console.log("Checking match:", currentColor, targetColor);
         if (currentColor === targetColor) {
             // Correct match
             score++;
             scoreEl.textContent = score;
             gameAreaEl.classList.add('success-flash');
+            console.log("Match! New score:", score);
             
             // Increase difficulty
             colorChangeSpeed = Math.max(300, colorChangeSpeed - 50);
+            console.log("Speed increased, new speed:", colorChangeSpeed);
             
             // Change target color
             targetColor = getRandomColor();
             targetZoneEl.style.backgroundColor = targetColor;
+            console.log("New target color:", targetColor);
             
             // Check win condition
             if (score >= 25) {
@@ -124,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 500);
         } else {
             // Incorrect match
+            console.log("No match!");
             gameAreaEl.classList.add('fail-flash');
             
             // Remove flash after animation
@@ -135,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Win the game
     function winGame() {
+        console.log("Game won!");
         gameActive = false;
         prizeAmountEl.textContent = '$5';
         targetZoneEl.classList.remove('pulse');
@@ -185,14 +229,19 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Event listeners
     startBtn.addEventListener('click', startGame);
+    console.log("Start button event listener added");
+    
     gameAreaEl.addEventListener('click', handleTap);
+    console.log("Game area click event listener added");
     
     // Touch events for mobile
     gameAreaEl.addEventListener('touchstart', (e) => {
         e.preventDefault();
         handleTap();
     });
+    console.log("Touch event listener added");
     
-    // Initialize color strip on load
+    // Initialize color strip and current color on load
     initColorStrip();
+    currentColorEl.style.backgroundColor = colors[0];
 }); 
