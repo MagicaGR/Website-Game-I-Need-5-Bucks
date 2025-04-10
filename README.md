@@ -1,38 +1,39 @@
-# INeed5Bucks.com
+# INeed5Bucks.com 🎮
 
-A modern, beautiful jump game where you can win $5 by scoring 50 points.
+A modern, beautiful jump game created purely for entertainment purposes.
 
-## 🎮 How to Play
+> **⚠️ DISCLAIMER:** This is a fun game with a fictional "$5 prize" mechanic. No actual money or prizes will be awarded. For entertainment purposes only.
 
-1. Click the START button to begin
-2. Press SPACE key or tap the screen to jump
+## How to Play
+
+1. Click the **START** button to begin
+2. Press **SPACE** key or tap the screen to jump
 3. Avoid obstacles by jumping over them
-4. Reach a score of 50 to win $5!
+4. Try to reach a score of 50!
 
 ## ✨ Features
 
-- Modern 2025 design with glassmorphism and gradients
-- Responsive layout for desktop and mobile
+- Sleek, modern design with glassmorphism and gradients
+- Responsive layout for seamless play on desktop and mobile
 - Beautiful particle effects and animations
-- Progressive difficulty
-- Dynamic background effects
-- Special obstacles for variety
+- Progressive difficulty system
+- Dynamic day/night cycle background
+- Variety of obstacles and power-ups
 
-## 🔧 Technical Details
+## 🛠️ Technology
 
-- Pure HTML, CSS, and JavaScript
-- No-cache implementation to ensure fresh content
-- Mobile-friendly design with touch support
-- Modern CSS features including:
-  - CSS variables
+- Built with vanilla HTML, CSS, and JavaScript
+- Mobile-friendly with touch support
+- Modern CSS including:
+  - Custom properties (variables)
   - Backdrop filters
   - Advanced animations
   - Gradient effects
 
-## 🚀 Get Started
+## 🚀 Getting Started
 
-Just open `index.html` in your browser to play!
+Simply open `index.html` in your browser to play!
 
 ---
 
-Created with 💙 in 2025 
+**Made with code & creativity in 2025** | [Play Now](#) 
