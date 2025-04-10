@@ -1,29 +1,38 @@
 # INeed5Bucks.com
 
-A simple, fun scratch card game website where users can "win money" by scratching virtual cards.
+A modern, beautiful jump game where you can win $5 by scoring 50 points.
 
-## Features
+## 🎮 How to Play
 
-- Interactive scratch card
-- Random prize amounts
-- Mobile-friendly design
-- Simple and intuitive interface
+1. Click the START button to begin
+2. Press SPACE key or tap the screen to jump
+3. Avoid obstacles by jumping over them
+4. Reach a score of 50 to win $5!
 
-## Setup
+## ✨ Features
 
-1. Upload all files to your shared hosting provider (Hostinger)
-2. The site works out of the box without any additional configuration
+- Modern 2025 design with glassmorphism and gradients
+- Responsive layout for desktop and mobile
+- Beautiful particle effects and animations
+- Progressive difficulty
+- Dynamic background effects
+- Special obstacles for variety
 
-## Files
+## 🔧 Technical Details
 
-- `index.html` - Main HTML structure
-- `style.css` - Styling for the website
-- `script.js` - JavaScript for the scratch card functionality
+- Pure HTML, CSS, and JavaScript
+- No-cache implementation to ensure fresh content
+- Mobile-friendly design with touch support
+- Modern CSS features including:
+  - CSS variables
+  - Backdrop filters
+  - Advanced animations
+  - Gradient effects
 
-## Compatibility
+## 🚀 Get Started
 
-This website is built with vanilla HTML, CSS, and JavaScript, making it compatible with all modern browsers and shared hosting environments.
+Just open `index.html` in your browser to play!
 
-## Note
+---
 
-This website is for entertainment purposes only. No actual money is awarded. 
+Created with 💙 in 2025 

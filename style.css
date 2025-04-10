@@ -2,78 +2,129 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, sans-serif;
+    font-family: 'Outfit', sans-serif;
+}
+
+:root {
+    --bg-primary: #0f0f1e;
+    --bg-secondary: #1a1a2e;
+    --accent-primary: #4cc9f0;
+    --accent-secondary: #4361ee;
+    --accent-tertiary: #3a0ca3;
+    --danger: #f72585;
+    --gold: #ffd60a;
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --blur-bg: rgba(255, 255, 255, 0.08);
+    --border-radius: 16px;
 }
 
 body {
-    background-color: #121212;
-    color: white;
+    background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+    color: var(--text-primary);
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     overflow: hidden;
+    background-attachment: fixed;
 }
 
 .game-container {
     width: 100%;
-    max-width: 600px;
+    max-width: 650px;
     text-align: center;
-    padding: 20px;
+    padding: 25px;
+    position: relative;
 }
 
 .header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
-    font-size: 24px;
-    font-weight: bold;
+    margin-bottom: 30px;
+    font-size: 18px;
+    font-weight: 700;
 }
 
-.score {
-    color: #4cc9f0;
+.score-card, .prize-card {
+    background: var(--blur-bg);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    padding: 15px 25px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 120px;
 }
 
-.prize {
-    color: gold;
+.score-label, .prize-label {
+    font-size: 14px;
+    opacity: 0.7;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+#score {
+    font-size: 28px;
+    color: var(--accent-primary);
+    font-weight: 700;
+}
+
+#prize {
+    font-size: 28px;
+    color: var(--gold);
+    font-weight: 700;
 }
 
 .game-area {
     width: 100%;
-    height: 300px;
-    background-color: #1e1e1e;
+    height: 320px;
+    background: var(--bg-secondary);
     position: relative;
     overflow: hidden;
-    border-radius: 8px;
-    margin-bottom: 20px;
+    border-radius: var(--border-radius);
+    margin-bottom: 25px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 #player {
     width: 40px;
     height: 60px;
-    background-color: #4361ee;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
     position: absolute;
     bottom: 20px; /* Above ground */
     left: 50px;
-    border-radius: 4px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.5);
+    transition: transform 0.1s;
 }
 
 .jump {
-    animation: jump 0.5s ease-out;
+    animation: jump 0.5s cubic-bezier(0.5, 0, 0.5, 1);
 }
 
 @keyframes jump {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-120px); }
-    100% { transform: translateY(0); }
+    0% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-150px) rotate(10deg); }
+    100% { transform: translateY(0) rotate(0deg); }
 }
 
 #ground {
     width: 100%;
     height: 20px;
-    background-color: #333;
+    background: linear-gradient(90deg, var(--bg-primary), var(--accent-tertiary), var(--bg-primary));
+    background-size: 200% 100%;
     position: absolute;
     bottom: 0;
+    animation: shiftBackground 15s linear infinite;
+}
+
+@keyframes shiftBackground {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 0%; }
 }
 
 .obstacle {
@@ -82,75 +133,129 @@ body {
     right: -50px;
     width: 30px;
     height: 40px;
-    background-color: #f72585;
-    border-radius: 4px;
+    background: linear-gradient(135deg, var(--danger), var(--accent-tertiary));
+    border-radius: 10px;
     animation: moveLeft linear forwards;
+    box-shadow: 0 5px 15px rgba(247, 37, 133, 0.5);
 }
 
 @keyframes moveLeft {
-    0% { right: -50px; }
-    100% { right: calc(100% + 50px); }
+    0% { right: -50px; transform: rotate(0deg); }
+    100% { right: calc(100% + 50px); transform: rotate(0deg); }
 }
 
 #start-btn {
-    background-color: #4cc9f0;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
     color: white;
     border: none;
-    padding: 12px 30px;
+    padding: 15px 40px;
     font-size: 18px;
-    font-weight: bold;
-    border-radius: 8px;
+    font-weight: 700;
+    border-radius: var(--border-radius);
     cursor: pointer;
-    margin-bottom: 20px;
-    transition: transform 0.1s, background-color 0.2s;
+    margin-bottom: 25px;
+    transition: all 0.3s;
+    box-shadow: 0 8px 20px rgba(76, 201, 240, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 #start-btn:hover {
-    background-color: #3a86ff;
+    transform: translateY(-5px);
+    box-shadow: 0 15px 25px rgba(76, 201, 240, 0.6);
 }
 
 #start-btn:active {
-    transform: scale(0.98);
+    transform: translateY(0);
+    box-shadow: 0 5px 15px rgba(76, 201, 240, 0.4);
+}
+
+#start-btn:disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .instructions {
-    color: #aaa;
-    line-height: 1.6;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    font-size: 16px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.key {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-family: monospace;
+    margin: 0 3px;
 }
 
 /* Particle effect for jumping */
 .particle {
     position: absolute;
-    width: 6px;
-    height: 6px;
-    background-color: #4361ee;
+    width: 8px;
+    height: 8px;
+    background: var(--accent-primary);
     border-radius: 50%;
-    animation: particleFade 0.5s linear forwards;
+    animation: particleFade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    box-shadow: 0 0 10px rgba(76, 201, 240, 0.7);
 }
 
 @keyframes particleFade {
     0% { 
         opacity: 1;
         transform: translate(0, 0) scale(1);
+        filter: hue-rotate(0deg);
     }
     100% { 
         opacity: 0;
         transform: translate(var(--tx, 0), var(--ty, 20px)) scale(0);
+        filter: hue-rotate(90deg);
+    }
+}
+
+/* Win particles */
+.win-particle {
+    position: absolute;
+    border-radius: 50%;
+    animation: winParticle 1.5s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+    z-index: 10;
+}
+
+@keyframes winParticle {
+    0% {
+        opacity: 1;
+        transform: scale(0) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1) rotate(180deg);
     }
 }
 
 /* Mobile adjustments */
-@media (max-width: 600px) {
+@media (max-width: 700px) {
     .game-area {
-        height: 250px;
+        height: 280px;
     }
     
     .header {
-        font-size: 20px;
+        font-size: 16px;
     }
     
     #start-btn {
-        padding: 10px 25px;
+        padding: 12px 30px;
         font-size: 16px;
+    }
+    
+    .score-card, .prize-card {
+        padding: 10px 15px;
+        min-width: 100px;
+    }
+    
+    #score, #prize {
+        font-size: 24px;
     }
 } 

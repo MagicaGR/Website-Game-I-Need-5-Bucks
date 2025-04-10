@@ -3,14 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Jump Game | Win $5</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="game-container">
         <div class="header">
-            <div class="score">Score: <span id="score">0</span></div>
-            <div class="prize">Prize: <span id="prize">$0</span></div>
+            <div class="score-card">
+                <span class="score-label">SCORE</span>
+                <span id="score">0</span>
+            </div>
+            <div class="prize-card">
+                <span class="prize-label">PRIZE</span>
+                <span id="prize">$0</span>
+            </div>
         </div>
         
         <div class="game-area">
@@ -21,11 +33,11 @@
         <button id="start-btn">START</button>
         
         <div class="instructions">
-            <p>Press SPACE or tap screen to jump</p>
+            <p>Press <span class="key">SPACE</span> or tap screen to jump</p>
             <p>Reach 50 points to win $5!</p>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=1.1"></script>
 </body>
 </html> 
