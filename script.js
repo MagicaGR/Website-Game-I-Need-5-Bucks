@@ -1,19 +1,46 @@
-// Wait for the DOM to fully load before executing the script
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM fully loaded, initializing game...');
+// Ensure script runs after DOM is fully loaded
+window.onload = function() {
+    console.log('Window loaded, initializing game...');
+    
+    // Safely get DOM elements with error handling
+    function getElement(selector, fallback = null) {
+        const element = document.querySelector(selector);
+        if (!element) {
+            console.error(`Element not found: ${selector}`);
+            return fallback;
+        }
+        return element;
+    }
+    
+    function getElementById(id, fallback = null) {
+        const element = document.getElementById(id);
+        if (!element) {
+            console.error(`Element with ID not found: ${id}`);
+            return fallback;
+        }
+        return element;
+    }
     
     // Game elements
-    const player = document.querySelector('.player');
-    const gameArea = document.querySelector('.game-area');
-    const ground = document.querySelector('.ground');
-    const startButton = document.getElementById('start-button');
-    const scoreDisplay = document.getElementById('score');
-    const prizeDisplay = document.getElementById('prize');
+    const player = getElement('.player');
+    const gameArea = getElement('.game-area');
+    const ground = getElement('.ground');
+    const startButton = getElementById('start-button');
+    const scoreDisplay = getElementById('score');
+    const prizeDisplay = getElementById('prize');
     
     // Log elements to verify they're found
     console.log('Player element:', player);
     console.log('Game area element:', gameArea);
     console.log('Start button element:', startButton);
+    console.log('Score display:', scoreDisplay);
+    console.log('Prize display:', prizeDisplay);
+    
+    // Check if all required elements exist
+    if (!player || !gameArea || !ground || !startButton || !scoreDisplay || !prizeDisplay) {
+        console.error('Missing required game elements. Game cannot start.');
+        return; // Exit early if elements are missing
+    }
     
     // Game variables
     let isGameRunning = false;
@@ -31,22 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { class: 'obstacle wide-obstacle', frequency: 2 }   // Wide obstacle
     ];
     
-    // Initialize game area
-    function init() {
-        console.log('Initializing game and adding event listeners');
-        // Add event listeners
-        document.addEventListener('keydown', jump);
-        gameArea.addEventListener('touchstart', jump);
-        
-        // Make sure start button exists before adding listener
-        if (startButton) {
-            startButton.addEventListener('click', toggleGame);
-            console.log('Start button listener added');
-        } else {
-            console.error('Start button not found!');
-        }
-    }
-    
     // Toggle game state
     function toggleGame() {
         console.log('Toggle game called, current state:', isGameRunning);
@@ -63,9 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
         isGameRunning = true;
         score = 0;
         speed = 1.5;
-        scoreDisplay.textContent = '0';
-        prizeDisplay.textContent = '$0';
-        startButton.textContent = 'STOP';
+        
+        if (scoreDisplay) scoreDisplay.textContent = '0';
+        if (prizeDisplay) prizeDisplay.textContent = '$0';
+        if (startButton) startButton.textContent = 'STOP';
         
         // Clear any existing obstacles
         document.querySelectorAll('.obstacle').forEach(obstacle => {
@@ -79,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         scoreTimer = setInterval(() => {
             if (isGameRunning) {
                 score++;
-                scoreDisplay.textContent = score;
+                if (scoreDisplay) scoreDisplay.textContent = score;
                 
                 // Increase speed as score increases
                 if (score % 10 === 0) {
@@ -96,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Create a new obstacle
     function createObstacle() {
-        if (!isGameRunning) return;
+        if (!isGameRunning || !gameArea) return;
         
         // Select obstacle type based on frequency
         const obstacleType = getWeightedRandomObstacle();
@@ -118,6 +130,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Check for collisions
         const checkCollision = setInterval(() => {
+            if (!player || !obstacle.parentElement) {
+                clearInterval(checkCollision);
+                return;
+            }
+            
             if (isColliding(player, obstacle)) {
                 clearInterval(checkCollision);
                 endGame();
@@ -137,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle jump action
     function jump(event) {
         // Only allow jump on space key, touchstart, or click events
-        if (
+        if (!player || 
             (event.type === 'keydown' && event.code !== 'Space') || 
             !isGameRunning || 
             isJumping
@@ -153,23 +170,32 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Remove jumping class after animation completes
         setTimeout(() => {
-            player.classList.remove('jumping');
-            isJumping = false;
+            if (player) {
+                player.classList.remove('jumping');
+                isJumping = false;
+            }
         }, 500);
     }
     
     // Create particle effects for jump
     function createJumpParticles() {
+        if (!player || !ground || !gameArea) return;
+        
         for (let i = 0; i < 8; i++) {
             const particle = document.createElement('div');
             particle.className = 'particle';
             
             // Random color from player or ground
-            const colors = [
-                getComputedStyle(player).backgroundColor,
-                getComputedStyle(ground).backgroundColor
-            ];
-            particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            try {
+                const colors = [
+                    getComputedStyle(player).backgroundColor,
+                    getComputedStyle(ground).backgroundColor
+                ];
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            } catch (e) {
+                console.error('Error setting particle color:', e);
+                particle.style.backgroundColor = '#fff';
+            }
             
             // Position at player's feet
             particle.style.left = (player.offsetLeft + player.offsetWidth / 2) + 'px';
@@ -192,22 +218,33 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Check if two elements are colliding
     function isColliding(element1, element2) {
-        const rect1 = element1.getBoundingClientRect();
-        const rect2 = element2.getBoundingClientRect();
-        
-        return !(
-            rect1.right < rect2.left + 10 || 
-            rect1.left > rect2.right - 10 || 
-            rect1.bottom < rect2.top + 10 || 
-            rect1.top > rect2.bottom - 10
-        );
+        try {
+            const rect1 = element1.getBoundingClientRect();
+            const rect2 = element2.getBoundingClientRect();
+            
+            return !(
+                rect1.right < rect2.left + 10 || 
+                rect1.left > rect2.right - 10 || 
+                rect1.bottom < rect2.top + 10 || 
+                rect1.top > rect2.bottom - 10
+            );
+        } catch (e) {
+            console.error('Error checking collision:', e);
+            return false;
+        }
     }
     
     // Get the horizontal position of an obstacle relative to the game area
     function getObstaclePosition(obstacle) {
-        const gameAreaRect = gameArea.getBoundingClientRect();
-        const obstacleRect = obstacle.getBoundingClientRect();
-        return gameAreaRect.right - obstacleRect.right;
+        try {
+            if (!gameArea) return 0;
+            const gameAreaRect = gameArea.getBoundingClientRect();
+            const obstacleRect = obstacle.getBoundingClientRect();
+            return gameAreaRect.right - obstacleRect.right;
+        } catch (e) {
+            console.error('Error getting obstacle position:', e);
+            return 0;
+        }
     }
     
     // End the game
@@ -215,24 +252,32 @@ document.addEventListener('DOMContentLoaded', () => {
         isGameRunning = false;
         clearInterval(obstacleTimer);
         clearInterval(scoreTimer);
-        startButton.textContent = 'START';
+        if (startButton) startButton.textContent = 'START';
         
         // Stop all obstacle animations
         document.querySelectorAll('.obstacle').forEach(obstacle => {
-            const currentPos = window.getComputedStyle(obstacle).right;
-            obstacle.style.right = currentPos;
-            obstacle.style.animation = 'none';
+            try {
+                const currentPos = window.getComputedStyle(obstacle).right;
+                obstacle.style.right = currentPos;
+                obstacle.style.animation = 'none';
+            } catch (e) {
+                console.error('Error stopping obstacle animation:', e);
+            }
         });
     }
     
     // Win the game
     function winGame() {
         endGame();
-        prizeDisplay.textContent = '$5';
+        if (prizeDisplay) prizeDisplay.textContent = '$5';
         
         // Create celebration particles
+        if (!gameArea) return;
+        
         for (let i = 0; i < 50; i++) {
             setTimeout(() => {
+                if (!gameArea) return;
+                
                 const particle = document.createElement('div');
                 particle.className = 'particle';
                 
@@ -285,6 +330,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return obstacleTypes[0];
     }
     
-    // Initialize the game
-    init();
-}); 
+    // Add event listeners
+    console.log('Adding event listeners');
+    document.addEventListener('keydown', jump);
+    if (gameArea) gameArea.addEventListener('touchstart', jump);
+    if (startButton) {
+        startButton.addEventListener('click', toggleGame);
+        console.log('Start button listener added');
+    } else {
+        console.error('Start button not found!');
+    }
+}; 
