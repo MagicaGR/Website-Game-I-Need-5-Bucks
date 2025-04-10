@@ -2,12 +2,18 @@
 window.addEventListener('load', function() {
     // DOM elements - Game screens
     const introScreen = document.getElementById('intro-screen');
+    const gameOverScreen = document.getElementById('game-over-screen');
     const settingsScreen = document.getElementById('settings-screen');
     const startIntroBtn = document.getElementById('start-intro-btn');
+    const restartBtn = document.getElementById('restart-btn');
     const settingsBtn = document.getElementById('settings-btn');
     const closeSettingsBtn = document.getElementById('close-settings');
     const difficultySelect = document.getElementById('difficulty');
     const soundToggle = document.getElementById('sound-toggle');
+    const doubleJumpToggle = document.getElementById('double-jump-toggle');
+    const dayNightToggle = document.getElementById('day-night-toggle');
+    const achievement = document.getElementById('achievement');
+    const achievementText = document.getElementById('achievement-text');
     
     // DOM elements - Game area
     const player = document.getElementById('player');
@@ -16,16 +22,25 @@ window.addEventListener('load', function() {
     const scoreElement = document.getElementById('score');
     const streakElement = document.getElementById('streak');
     const prizeElement = document.getElementById('prize');
+    const finalScoreElement = document.getElementById('final-score');
+    const finalStreakElement = document.getElementById('final-streak');
+    const highScoreElement = document.getElementById('high-score');
     const milestonePopup = document.getElementById('milestone-popup');
     const milestoneText = document.getElementById('milestone-text');
     const powerupIndicator = document.getElementById('powerup-indicator');
     const powerupName = document.getElementById('powerup-name');
     const powerupTimer = document.getElementById('powerup-timer');
+    const comboIndicator = document.getElementById('combo-indicator');
+    const doubleJumpIndicator = document.querySelector('.double-jump-indicator');
+    const characterOptions = document.querySelectorAll('.character-option');
     
     // Game state
     let isPlaying = false;
     let score = 0;
+    let highScore = localStorage.getItem('highScore') || 0;
     let streak = 0;
+    let bestStreak = 0;
+    let comboMultiplier = 1;
     let obstacleSpeed = 2; // seconds
     let obstacleInterval;
     let scoreInterval;
@@ -35,15 +50,63 @@ window.addEventListener('load', function() {
     let activePowerup = null;
     let powerupTimeout;
     let soundEnabled = true;
+    let doubleJumpEnabled = true;
+    let canDoubleJump = false;
+    let hasDoubleJumped = false;
     let difficulty = 'medium';
+    let dayNightCycleEnabled = true;
+    let isDayTime = true;
+    let dayNightInterval;
+    let characterColor = 'blue';
+    let achievements = JSON.parse(localStorage.getItem('achievements')) || {};
     
     // Sound effects - create audio elements
     const sounds = {
         jump: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YRAAAAAAAAAAAP//AoD//wAAAAA='),
         powerup: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YRAAAAAAAAAAAP//f3///wAAAAA='),
         collision: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YRAAAAAAAAAAAP//f5D//wAAAAA='),
-        win: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YRAAAAAAAAAAAP//f3///wAAAAA=')
+        win: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YRAAAAAAAAAAAP//f3///wAAAAA='),
+        achievement: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YRAAAAAAAAAAAP//f2P//wAAAAA=')
     };
+    
+    // Achievement definitions
+    const achievementsList = {
+        firstJump: {
+            title: "First Jump",
+            description: "Jump for the first time"
+        },
+        perfectLanding: {
+            title: "Perfect Landing",
+            description: "Get a streak of at least 10"
+        },
+        speedDemon: {
+            title: "Speed Demon",
+            description: "Collect a speed power-up"
+        },
+        invincible: {
+            title: "Invincible",
+            description: "Survive with a shield"
+        },
+        nightOwl: {
+            title: "Night Owl",
+            description: "Play during night time"
+        },
+        comboMaster: {
+            title: "Combo Master",
+            description: "Reach a 3x combo multiplier"
+        },
+        highFlyer: {
+            title: "High Flyer",
+            description: "Use double jump"
+        },
+        treasureHunter: {
+            title: "Treasure Hunter",
+            description: "Reach a high score of 30"
+        }
+    };
+    
+    // Update high score display
+    highScoreElement.textContent = highScore;
     
     // Play sound if enabled
     function playSound(name) {
@@ -53,11 +116,39 @@ window.addEventListener('load', function() {
         }
     }
     
+    // Show achievement notification
+    function showAchievement(id) {
+        if (achievements[id]) return; // Already unlocked
+        
+        achievements[id] = true;
+        localStorage.setItem('achievements', JSON.stringify(achievements));
+        
+        const achievementInfo = achievementsList[id];
+        achievementText.textContent = achievementInfo.description;
+        achievement.querySelector('.achievement-title').textContent = achievementInfo.title;
+        
+        achievement.classList.add('show');
+        playSound('achievement');
+        
+        setTimeout(() => {
+            achievement.classList.remove('show');
+        }, 3000);
+    }
+    
     // Initialize game
     function init() {
+        // Update high score display
+        highScoreElement.textContent = highScore;
+        
         // Hide intro screen on start button click
         startIntroBtn.addEventListener('click', () => {
             introScreen.classList.add('hidden');
+        });
+        
+        // Restart button in game over screen
+        restartBtn.addEventListener('click', () => {
+            gameOverScreen.classList.add('hidden');
+            startGame();
         });
         
         // Settings button
@@ -71,25 +162,104 @@ window.addEventListener('load', function() {
             // Apply settings
             difficulty = difficultySelect.value;
             soundEnabled = soundToggle.checked;
+            doubleJumpEnabled = doubleJumpToggle.checked;
+            dayNightCycleEnabled = dayNightToggle.checked;
+            
             updateDifficulty();
+            updateDayNightCycle();
+            updateDoubleJumpIndicator();
+        });
+        
+        // Character selection
+        characterOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                characterOptions.forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                characterColor = option.dataset.character;
+                updateCharacterColor();
+            });
         });
         
         // Reset game state
-        score = 0;
-        streak = 0;
-        isPlaying = false;
-        obstacleSpeed = getDifficultySpeed();
-        scoreElement.textContent = '0';
-        streakElement.textContent = '0x';
-        prizeElement.textContent = '$0';
-        
-        // Clear ALL existing obstacles
-        clearAllObstacles();
+        resetGameState();
         
         // Add event listeners
         document.addEventListener('keydown', handleJump);
         gameArea.addEventListener('touchstart', handleJump);
         startBtn.addEventListener('click', startGame);
+        
+        // Start day/night cycle if enabled
+        updateDayNightCycle();
+    }
+    
+    // Reset game state
+    function resetGameState() {
+        score = 0;
+        streak = 0;
+        bestStreak = 0;
+        comboMultiplier = 1;
+        isPlaying = false;
+        obstacleSpeed = getDifficultySpeed();
+        scoreElement.textContent = '0';
+        streakElement.textContent = '0x';
+        prizeElement.textContent = '$0';
+        canDoubleJump = false;
+        hasDoubleJumped = false;
+        
+        // Clear ALL existing obstacles
+        clearAllObstacles();
+        
+        // Update double jump indicator
+        updateDoubleJumpIndicator();
+    }
+    
+    // Update character color based on selection
+    function updateCharacterColor() {
+        const playerChar = player.querySelector('.player-character');
+        playerChar.style.background = '';
+        playerChar.classList.remove('character-blue', 'character-red', 'character-gold');
+        
+        switch(characterColor) {
+            case 'red':
+                playerChar.style.background = 'linear-gradient(135deg, var(--danger), #b5179e)';
+                break;
+            case 'gold':
+                playerChar.style.background = 'linear-gradient(135deg, var(--gold), #fb8500)';
+                break;
+            default: // blue
+                playerChar.style.background = 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))';
+                break;
+        }
+    }
+    
+    // Update day/night cycle
+    function updateDayNightCycle() {
+        if (dayNightInterval) {
+            clearInterval(dayNightInterval);
+        }
+        
+        if (dayNightCycleEnabled) {
+            // Start with day time
+            isDayTime = true;
+            gameArea.classList.remove('night-mode');
+            
+            // Toggle day/night every 30 seconds
+            dayNightInterval = setInterval(() => {
+                isDayTime = !isDayTime;
+                
+                if (isDayTime) {
+                    gameArea.classList.remove('night-mode');
+                } else {
+                    gameArea.classList.add('night-mode');
+                    // Unlock night owl achievement
+                    showAchievement('nightOwl');
+                }
+            }, 30000);
+        } else {
+            // Always day time if disabled
+            isDayTime = true;
+            gameArea.classList.remove('night-mode');
+        }
     }
     
     // Update difficulty settings
@@ -97,6 +267,23 @@ window.addEventListener('load', function() {
         obstacleSpeed = getDifficultySpeed();
         if (isPlaying) {
             createObstacleInterval();
+        }
+    }
+    
+    // Update double jump indicator
+    function updateDoubleJumpIndicator() {
+        if (!doubleJumpEnabled) {
+            doubleJumpIndicator.classList.add('hidden');
+            return;
+        }
+        
+        doubleJumpIndicator.classList.remove('hidden');
+        
+        const indicator = doubleJumpIndicator.querySelector('div');
+        if (canDoubleJump && !hasDoubleJumped) {
+            indicator.className = 'double-jump-available';
+        } else {
+            indicator.className = 'double-jump-used';
         }
     }
     
@@ -135,6 +322,9 @@ window.addEventListener('load', function() {
     function startGame() {
         if (isPlaying) return;
         
+        // Reset game state for new game
+        resetGameState();
+        
         // Clear any leftovers before starting
         clearAllObstacles();
         
@@ -142,9 +332,8 @@ window.addEventListener('load', function() {
         startBtn.textContent = 'PLAYING...';
         startBtn.disabled = true;
         
-        // Reset streak
-        streak = 0;
-        streakElement.textContent = '0x';
+        // Update character color
+        updateCharacterColor();
         
         // Animate player at start
         player.classList.add('game-start');
@@ -173,6 +362,11 @@ window.addEventListener('load', function() {
                     createBackgroundEffect();
                 }
                 
+                // Check for high score achievement
+                if (score >= 30) {
+                    showAchievement('treasureHunter');
+                }
+                
                 // Occasionally spawn power-ups (after score of 10)
                 if (score > 10 && score % 12 === 0 && Math.random() > 0.4) {
                     createPowerup();
@@ -196,6 +390,17 @@ window.addEventListener('load', function() {
             milestonePopup.classList.remove('show');
             milestonePopup.classList.add('hidden');
         }, 1500);
+    }
+    
+    // Show combo indicator
+    function showCombo(multiplier) {
+        comboIndicator.textContent = `COMBO x${multiplier}!`;
+        comboIndicator.classList.remove('show');
+        
+        // Force reflow to restart animation
+        void comboIndicator.offsetWidth;
+        
+        comboIndicator.classList.add('show');
     }
     
     // Create background effects
@@ -319,12 +524,14 @@ window.addEventListener('load', function() {
         switch(powerupType.name) {
             case 'SHIELD':
                 player.classList.add('shield-active');
+                showAchievement('invincible');
                 break;
             case 'SPEED UP':
                 player.classList.add('speed-boost');
                 const oldSpeed = obstacleSpeed;
                 obstacleSpeed = Math.max(0.8, obstacleSpeed - 0.5);
                 createObstacleInterval();
+                showAchievement('speedDemon');
                 
                 // Restore normal speed after powerup ends
                 powerupTimeout = setTimeout(() => {
@@ -430,11 +637,33 @@ window.addEventListener('load', function() {
                 obstacleData.passed = true;
                 // Increment streak
                 streak++;
+                bestStreak = Math.max(bestStreak, streak);
                 streakElement.textContent = streak + 'x';
+                
+                // Update combo multiplier (max 3x)
+                if (streak > 0 && streak % 3 === 0) {
+                    comboMultiplier = Math.min(3, 1 + Math.floor(streak / 3));
+                    showCombo(comboMultiplier);
+                    
+                    if (comboMultiplier >= 3) {
+                        showAchievement('comboMaster');
+                    }
+                }
                 
                 // Show milestone for big streaks
                 if (streak % 5 === 0) {
                     showMilestone(`${streak}x STREAK!`);
+                    
+                    if (streak >= 10) {
+                        showAchievement('perfectLanding');
+                    }
+                }
+                
+                // Enable double jump after passing an obstacle (if feature enabled)
+                if (doubleJumpEnabled) {
+                    canDoubleJump = true;
+                    hasDoubleJumped = false;
+                    updateDoubleJumpIndicator();
                 }
             }
             
@@ -512,11 +741,33 @@ window.addEventListener('load', function() {
                 obstacleData.passed = true;
                 // Increment streak
                 streak++;
+                bestStreak = Math.max(bestStreak, streak);
                 streakElement.textContent = streak + 'x';
+                
+                // Update combo multiplier (max 3x)
+                if (streak > 0 && streak % 3 === 0) {
+                    comboMultiplier = Math.min(3, 1 + Math.floor(streak / 3));
+                    showCombo(comboMultiplier);
+                    
+                    if (comboMultiplier >= 3) {
+                        showAchievement('comboMaster');
+                    }
+                }
                 
                 // Show milestone for big streaks
                 if (streak % 5 === 0) {
                     showMilestone(`${streak}x STREAK!`);
+                    
+                    if (streak >= 10) {
+                        showAchievement('perfectLanding');
+                    }
+                }
+                
+                // Enable double jump after passing an obstacle (if feature enabled)
+                if (doubleJumpEnabled) {
+                    canDoubleJump = true;
+                    hasDoubleJumped = false;
+                    updateDoubleJumpIndicator();
                 }
             }
             
@@ -539,26 +790,61 @@ window.addEventListener('load', function() {
     
     // Handle jump action
     function handleJump(event) {
-        // Only jump if game is playing and not already jumping
-        if (!isPlaying || isJumping) return;
+        // Only jump if game is playing
+        if (!isPlaying) return;
         
         // Only jump on spacebar for keyboard events
         if (event.type === 'keydown' && event.code !== 'Space') return;
         
-        isJumping = true;
-        player.classList.add('jump');
+        // First jump
+        if (!isJumping) {
+            isJumping = true;
+            player.classList.add('jump');
+            
+            // Unlock first jump achievement
+            showAchievement('firstJump');
+            
+            // Play jump sound
+            playSound('jump');
+            
+            // Create jump particles
+            createParticles();
+            
+            // Remove jump class when animation completes
+            setTimeout(() => {
+                player.classList.remove('jump');
+                isJumping = false;
+            }, 500);
+            
+            return;
+        }
         
-        // Play jump sound
-        playSound('jump');
-        
-        // Create jump particles
-        createParticles();
-        
-        // Remove jump class when animation completes
-        setTimeout(() => {
-            player.classList.remove('jump');
-            isJumping = false;
-        }, 500);
+        // Handle double jump if enabled and available
+        if (doubleJumpEnabled && canDoubleJump && !hasDoubleJumped && isJumping) {
+            // Second jump (double jump)
+            hasDoubleJumped = true;
+            canDoubleJump = false;
+            updateDoubleJumpIndicator();
+            
+            // Extend jump height/duration
+            player.style.animation = 'none';
+            void player.offsetHeight; // Force reflow
+            player.style.animation = 'jump 0.6s cubic-bezier(0.5, 0, 0.5, 1)';
+            
+            // Play jump sound again
+            playSound('jump');
+            
+            // Create more particles
+            createParticles();
+            
+            // Unlock double jump achievement
+            showAchievement('highFlyer');
+            
+            // Clear animation style after double jump
+            setTimeout(() => {
+                player.style.animation = '';
+            }, 600);
+        }
     }
     
     // Create particle effect when jumping
@@ -619,6 +905,18 @@ window.addEventListener('load', function() {
         // Play collision sound
         playSound('collision');
         
+        // Update high score if needed
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('highScore', highScore);
+            highScoreElement.textContent = highScore;
+        }
+        
+        // Update final score display in game over screen
+        finalScoreElement.textContent = score;
+        finalStreakElement.textContent = bestStreak;
+        highScoreElement.textContent = highScore;
+        
         // Visual feedback for game over
         player.classList.add('game-over');
         gameArea.classList.add('game-over');
@@ -629,6 +927,9 @@ window.addEventListener('load', function() {
         setTimeout(() => {
             player.classList.remove('game-over');
             gameArea.classList.remove('game-over');
+            
+            // Show game over screen
+            gameOverScreen.classList.remove('hidden');
             
             startBtn.textContent = 'PLAY AGAIN';
             startBtn.disabled = false;
@@ -648,6 +949,13 @@ window.addEventListener('load', function() {
         
         // Play win sound
         playSound('win');
+        
+        // Update high score if needed
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('highScore', highScore);
+            highScoreElement.textContent = highScore;
+        }
         
         prizeElement.textContent = '$5';
         startBtn.textContent = 'YOU WIN! PLAY AGAIN';
