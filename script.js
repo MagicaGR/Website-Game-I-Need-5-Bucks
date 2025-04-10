@@ -1,4 +1,7 @@
+// Wait for the DOM to fully load before executing the script
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM fully loaded, initializing game...');
+    
     // Game elements
     const player = document.querySelector('.player');
     const gameArea = document.querySelector('.game-area');
@@ -6,6 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const startButton = document.getElementById('start-button');
     const scoreDisplay = document.getElementById('score');
     const prizeDisplay = document.getElementById('prize');
+    
+    // Log elements to verify they're found
+    console.log('Player element:', player);
+    console.log('Game area element:', gameArea);
+    console.log('Start button element:', startButton);
     
     // Game variables
     let isGameRunning = false;
@@ -25,14 +33,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize game area
     function init() {
+        console.log('Initializing game and adding event listeners');
         // Add event listeners
         document.addEventListener('keydown', jump);
         gameArea.addEventListener('touchstart', jump);
-        startButton.addEventListener('click', toggleGame);
+        
+        // Make sure start button exists before adding listener
+        if (startButton) {
+            startButton.addEventListener('click', toggleGame);
+            console.log('Start button listener added');
+        } else {
+            console.error('Start button not found!');
+        }
     }
     
     // Toggle game state
     function toggleGame() {
+        console.log('Toggle game called, current state:', isGameRunning);
         if (isGameRunning) {
             endGame();
         } else {
@@ -42,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Start the game
     function startGame() {
+        console.log('Starting game');
         isGameRunning = true;
         score = 0;
         speed = 1.5;
