@@ -62,11 +62,13 @@ window.addEventListener('load', function() {
     
     // Sound effects - create audio elements
     const sounds = {
-        jump: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YRAAAAAAAAAAAP//AoD//wAAAAA='),
-        powerup: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YRAAAAAAAAAAAP//f3///wAAAAA='),
-        collision: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YRAAAAAAAAAAAP//f5D//wAAAAA='),
-        win: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YRAAAAAAAAAAAP//f3///wAAAAA='),
-        achievement: new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YRAAAAAAAAAAAP//f2P//wAAAAA=')
+        jump: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-player-jumping-in-a-video-game-2043.mp3'),
+        powerup: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-game-ball-tap-2073.mp3'),
+        collision: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-retro-arcade-game-over-470.mp3'),
+        win: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3'),
+        achievement: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3'),
+        combo: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-arcade-bonus-229.mp3'),
+        milestone: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-game-level-completed-2059.mp3')
     };
     
     // Achievement definitions
@@ -386,6 +388,9 @@ window.addEventListener('load', function() {
         milestonePopup.classList.remove('hidden');
         milestonePopup.classList.add('show');
         
+        // Play milestone sound
+        playSound('milestone');
+        
         setTimeout(() => {
             milestonePopup.classList.remove('show');
             milestonePopup.classList.add('hidden');
@@ -396,6 +401,9 @@ window.addEventListener('load', function() {
     function showCombo(multiplier) {
         comboIndicator.textContent = `COMBO x${multiplier}!`;
         comboIndicator.classList.remove('show');
+        
+        // Play combo sound
+        playSound('combo');
         
         // Force reflow to restart animation
         void comboIndicator.offsetWidth;
@@ -589,6 +597,16 @@ window.addEventListener('load', function() {
         const obstacle = document.createElement('div');
         obstacle.className = 'obstacle';
         
+        // Add random rotation for visual variety
+        const rotation = Math.random() * 20 - 10;
+        obstacle.style.transform = `rotate(${rotation}deg)`;
+        
+        // Random obstacle color variation
+        if (Math.random() > 0.7) {
+            const hue = Math.floor(Math.random() * 30);
+            obstacle.style.filter = `hue-rotate(${hue}deg)`;
+        }
+        
         // Set animation duration based on current speed
         obstacle.style.animationDuration = obstacleSpeed + 's';
         
@@ -694,8 +712,13 @@ window.addEventListener('load', function() {
         const obstacle = document.createElement('div');
         obstacle.className = 'obstacle special-obstacle';
         
-        // Set animation duration based on current speed
-        obstacle.style.animationDuration = obstacleSpeed + 's';
+        // Add pulsing effect to special obstacles
+        obstacle.style.animation = `moveLeft ${obstacleSpeed}s linear forwards, glowPulse 1s ease-in-out infinite alternate`;
+        
+        // Add random shine effect
+        const shine = document.createElement('div');
+        shine.className = 'obstacle-shine';
+        obstacle.appendChild(shine);
         
         gameArea.appendChild(obstacle);
         
@@ -810,6 +833,9 @@ window.addEventListener('load', function() {
             // Create jump particles
             createParticles();
             
+            // Create trail effect during jump
+            createJumpTrail();
+            
             // Remove jump class when animation completes
             setTimeout(() => {
                 player.classList.remove('jump');
@@ -837,6 +863,9 @@ window.addEventListener('load', function() {
             // Create more particles
             createParticles();
             
+            // Create additional trail for double jump
+            createJumpTrail(true);
+            
             // Unlock double jump achievement
             showAchievement('highFlyer');
             
@@ -847,9 +876,50 @@ window.addEventListener('load', function() {
         }
     }
     
+    // Create trail effect during jump
+    function createJumpTrail(isDoubleJump = false) {
+        // Create trail on a timer
+        let trailCount = 0;
+        const maxTrails = isDoubleJump ? 12 : 8;
+        const trailColor = isDoubleJump ? 'var(--warning)' : 'var(--accent-primary)';
+        
+        const trailInterval = setInterval(() => {
+            if (!isJumping || trailCount >= maxTrails) {
+                clearInterval(trailInterval);
+                return;
+            }
+            
+            const playerRect = player.getBoundingClientRect();
+            const gameRect = gameArea.getBoundingClientRect();
+            
+            const trail = document.createElement('div');
+            trail.className = 'player-trail';
+            trail.style.width = '30px';
+            trail.style.height = '45px';
+            trail.style.left = (playerRect.left - gameRect.left + 5) + 'px';
+            trail.style.top = (playerRect.top - gameRect.top + 8) + 'px';
+            trail.style.backgroundColor = trailColor;
+            trail.style.opacity = '0.3';
+            
+            gameArea.appendChild(trail);
+            
+            // Remove after animation
+            setTimeout(() => {
+                if (trail.parentElement) {
+                    trail.remove();
+                }
+            }, 500);
+            
+            trailCount++;
+        }, 50);
+    }
+    
     // Create particle effect when jumping
     function createParticles() {
-        for (let i = 0; i < 8; i++) {
+        const particleCount = 12;
+        const colors = ['var(--accent-primary)', 'var(--accent-secondary)', 'var(--warning)'];
+        
+        for (let i = 0; i < particleCount; i++) {
             const particle = document.createElement('div');
             particle.className = 'particle';
             
@@ -865,9 +935,12 @@ window.addEventListener('load', function() {
             particle.style.width = size + 'px';
             particle.style.height = size + 'px';
             
+            // Random color
+            particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            
             // Random horizontal and vertical movement
-            const tx = (Math.random() - 0.5) * 50;
-            const ty = Math.random() * 20 + 20;
+            const tx = (Math.random() - 0.5) * 70;
+            const ty = Math.random() * 30 + 20;
             particle.style.setProperty('--tx', tx + 'px');
             particle.style.setProperty('--ty', ty + 'px');
             
@@ -967,6 +1040,9 @@ window.addEventListener('load', function() {
         // Show winning milestone
         showMilestone('YOU WIN $5!');
         
+        // Add rainbow effect to game area
+        gameArea.classList.add('rainbow-border');
+        
         // Create celebration particles
         for (let i = 0; i < 50; i++) {
             setTimeout(() => {
@@ -974,9 +1050,10 @@ window.addEventListener('load', function() {
             }, i * 60);
         }
         
-        // Remove player animation after delay
+        // Remove player animation and effects after delay
         setTimeout(() => {
             player.classList.remove('win-animation');
+            gameArea.classList.remove('rainbow-border');
         }, 3000);
     }
     
@@ -1049,6 +1126,23 @@ window.addEventListener('load', function() {
             height: 60px;
             border-radius: 50% 50% 10px 10px;
             background: linear-gradient(135deg, #f72585, #7209b7);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .obstacle-shine {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            right: -50%;
+            bottom: -50%;
+            background: linear-gradient(45deg, transparent 45%, rgba(255, 255, 255, 0.5) 50%, transparent 55%);
+            animation: shine 2s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
         
         .background-effect {
@@ -1066,6 +1160,33 @@ window.addEventListener('load', function() {
             0% { transform: scale(0); opacity: 0; }
             50% { opacity: 0.2; }
             100% { transform: scale(3); opacity: 0; }
+        }
+        
+        .rainbow-border {
+            border: 3px solid transparent;
+            animation: rainbowBorder 2s linear infinite;
+            background-origin: border-box;
+            background-clip: content-box, border-box;
+            background-image: linear-gradient(var(--bg-secondary), var(--bg-secondary)), 
+                              linear-gradient(90deg, #ff0000, #ffa500, #ffff00, #008000, #0000ff, #4b0082, #ee82ee);
+        }
+        
+        @keyframes rainbowBorder {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+        
+        .player-trail {
+            position: absolute;
+            border-radius: 10px;
+            pointer-events: none;
+            z-index: 4;
+            animation: fadeTrail 0.5s forwards;
+        }
+        
+        @keyframes fadeTrail {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.7); }
         }
     `;
     document.head.appendChild(style);
