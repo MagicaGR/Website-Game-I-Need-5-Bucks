@@ -1063,19 +1063,21 @@ body {
 /* Double jump indicator */
 .double-jump-indicator {
     position: absolute;
-    bottom: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 5px;
-    padding: 5px 10px;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    padding: 8px 12px;
     color: var(--text-primary);
     font-size: 12px;
+    font-weight: bold;
     display: flex;
     align-items: center;
-    gap: 5px;
-    z-index: 10;
+    gap: 8px;
+    z-index: 100;
     backdrop-filter: blur(3px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .double-jump-available {
