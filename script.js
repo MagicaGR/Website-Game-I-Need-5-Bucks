@@ -144,6 +144,20 @@ window.addEventListener('load', function() {
         // Update high score display
         highScoreElement.textContent = highScore;
         
+        // Make achievement notification dismissable on click
+        achievement.addEventListener('click', () => {
+            achievement.classList.remove('show');
+        });
+        
+        // Add specific handler for close button
+        const closeAchievementBtn = document.getElementById('close-achievement');
+        if (closeAchievementBtn) {
+            closeAchievementBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent the click from bubbling to the achievement element
+                achievement.classList.remove('show');
+            });
+        }
+        
         // Hide intro screen on start button click
         startIntroBtn.addEventListener('click', () => {
             introScreen.classList.add('hidden');
@@ -1397,4 +1411,16 @@ window.addEventListener('load', function() {
     window.addEventListener('resize', resizeHandler);
     // Call resize handler on initial load
     window.addEventListener('load', resizeHandler);
+    
+    // Force hide any stuck achievement notifications
+    if (achievement) {
+        achievement.classList.remove('show');
+        
+        // Add a key press handler to dismiss achievement with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                achievement.classList.remove('show');
+            }
+        });
+    }
 }); 
