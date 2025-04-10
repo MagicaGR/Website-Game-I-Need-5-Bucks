@@ -1038,7 +1038,7 @@ window.addEventListener('load', function() {
         player.classList.add('win-animation');
         
         // Show winning milestone
-        showMilestone('YOU WIN $5!');
+        showMilestone('YOU WON! GREAT JOB!');
         
         // Add rainbow effect to game area
         gameArea.classList.add('rainbow-border');
