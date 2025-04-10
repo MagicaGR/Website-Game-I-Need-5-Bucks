@@ -3,50 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>I Need 5 Bucks - Scratch and Match!</title>
+    <title>Win 5 Bucks!</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>I Need 5 Bucks</h1>
-            <p class="tagline">Scratch and match 3 symbols to win $5! 🎉</p>
+            <h1>Win 5 Bucks!</h1>
+            <p class="tagline">Match the numbers to win $5! 🎮</p>
         </header>
         
         <main>
             <div class="game-container">
-                <div class="instructions">
-                    <p>Scratch each card to reveal a symbol. Match 3 of the same symbol to win $5!</p>
+                <div class="game-info">
+                    <div class="score">Score: <span id="score">0</span></div>
+                    <div class="timer">Time: <span id="timer">30</span>s</div>
                 </div>
                 
-                <div class="cards-container">
-                    <div class="card" id="card1">
-                        <div class="symbol">?</div>
-                        <canvas class="scratch-overlay"></canvas>
-                    </div>
-                    <div class="card" id="card2">
-                        <div class="symbol">?</div>
-                        <canvas class="scratch-overlay"></canvas>
-                    </div>
-                    <div class="card" id="card3">
-                        <div class="symbol">?</div>
-                        <canvas class="scratch-overlay"></canvas>
-                    </div>
+                <div class="game-board" id="game-board">
+                    <!-- Numbers will be generated here -->
                 </div>
-
-                <div class="result-container">
+                
+                <div class="controls">
+                    <button id="start-btn">Start Game</button>
                     <div class="prize-display">
                         <span class="prize-label">Prize:</span>
                         <span class="prize-amount">$0</span>
                     </div>
-                    <button id="reset-btn">New Game! 🎮</button>
                 </div>
             </div>
         </main>
 
         <footer>
-            <p>&copy; 2024 iNeed5Bucks.com - For entertainment purposes only</p>
+            <p>&copy; 2024 Win5Bucks.com - For entertainment purposes only</p>
         </footer>
     </div>
 

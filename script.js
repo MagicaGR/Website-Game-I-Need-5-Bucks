@@ -1,248 +1,241 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Game symbols
-    const symbols = ['🍎', '🍊', '🍇', '🍒', '🍋', '🍉'];
-    const cards = document.querySelectorAll('.card');
+document.addEventListener('DOMContentLoaded', () => {
+    const gameBoard = document.getElementById('game-board');
+    const startBtn = document.getElementById('start-btn');
+    const scoreDisplay = document.getElementById('score');
+    const timerDisplay = document.getElementById('timer');
     const prizeAmount = document.querySelector('.prize-amount');
-    const resetBtn = document.getElementById('reset-btn');
     
-    // Game state
-    let revealedSymbols = [];
-    let isGameComplete = false;
+    let score = 0;
+    let timeLeft = 30;
+    let gameInterval;
+    let isGameRunning = false;
+    let selectedTiles = [];
+    let matchedPairs = 0;
     
-    // Initialize each card
-    cards.forEach((card, index) => {
-        const canvas = card.querySelector('.scratch-overlay');
-        const symbol = card.querySelector('.symbol');
-        const ctx = canvas.getContext('2d');
-    let isDrawing = false;
-    let lastX = 0;
-    let lastY = 0;
-    let scratchedArea = 0;
-    let totalArea = 0;
-    let isRevealed = false;
+    // Sound effects
+    const sounds = {
+        select: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3'),
+        match: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-game-success-alert-2039.mp3'),
+        win: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3'),
+        wrong: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3'),
+        tick: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-clock-tick-1059.mp3')
+    };
     
-    // Set canvas size
-    function setCanvasSize() {
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-            totalArea = canvas.width * canvas.height;
-            initScratchCard();
+    // Prepare numbers for the game (pairs of 1-8)
+    function prepareNumbers() {
+        const numbers = [];
+        for (let i = 1; i <= 8; i++) {
+            numbers.push(i, i); // Add each number twice to create pairs
+        }
+        return shuffleArray(numbers);
     }
     
-    // Initialize the scratch card
-    function initScratchCard() {
-        // Reset the scratch overlay
-        scratchedArea = 0;
-        isRevealed = false;
-            canvas.style.display = 'block';
-            canvas.style.opacity = '1';
-            
-            // Clear the canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Fill the canvas with a semi-transparent white
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Add scratch texture
-        ctx.fillStyle = '#3498db';
-            for (let i = 0; i < canvas.width; i += 20) {
-                for (let j = 0; j < canvas.height; j += 20) {
-                    ctx.fillRect(i, j, 10, 10);
-                }
-            }
+    // Shuffle array using Fisher-Yates algorithm
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
         }
+        return array;
+    }
+    
+    // Initialize the game board
+    function initializeBoard() {
+        gameBoard.innerHTML = '';
+        const numbers = prepareNumbers();
         
-        function getCoordinates(e) {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
+        for (let i = 0; i < 16; i++) {
+            const tile = document.createElement('div');
+            tile.className = 'number-tile';
+            tile.dataset.number = numbers[i];
             
-            if (e.type.includes('touch')) {
-                const touch = e.touches[0];
-                return {
-                    x: (touch.clientX - rect.left) * scaleX,
-                    y: (touch.clientY - rect.top) * scaleY
-                };
-            } else {
-                return {
-                    x: (e.clientX - rect.left) * scaleX,
-                    y: (e.clientY - rect.top) * scaleY
-                };
-            }
+            // Create front and back sides for the tile
+            const tileFront = document.createElement('div');
+            tileFront.className = 'tile-front';
+            tileFront.textContent = '?';
+            
+            const tileBack = document.createElement('div');
+            tileBack.className = 'tile-back';
+            tileBack.textContent = numbers[i];
+            
+            tile.appendChild(tileFront);
+            tile.appendChild(tileBack);
+            
+            tile.addEventListener('click', () => handleTileClick(tile));
+            gameBoard.appendChild(tile);
         }
+    }
+    
+    // Handle tile click
+    function handleTileClick(tile) {
+        if (!isGameRunning || tile.classList.contains('flipped') || 
+            tile.classList.contains('matched') || selectedTiles.length >= 2) return;
         
-        function scratchAtPoint(x, y) {
-            const scratchRadius = 25;
-            
-            // Create scratch effect
-            ctx.beginPath();
-            ctx.arc(x, y, scratchRadius, 0, Math.PI * 2);
-            ctx.fillStyle = 'transparent';
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.fill();
-            
-            // Add scratch marks
-            for (let i = 0; i < 8; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const distance = Math.random() * scratchRadius;
-                const tx = x + Math.cos(angle) * distance;
-                const ty = y + Math.sin(angle) * distance;
+        sounds.select.currentTime = 0;
+        sounds.select.play();
+        
+        // Flip the tile
+        tile.classList.add('flipped');
+        selectedTiles.push(tile);
+        
+        if (selectedTiles.length === 2) {
+            checkMatch();
+        }
+    }
+    
+    // Check if selected tiles match
+    function checkMatch() {
+        const [tile1, tile2] = selectedTiles;
+        const number1 = tile1.dataset.number;
+        const number2 = tile2.dataset.number;
+        
+        if (number1 === number2) {
+            // Match found
+            setTimeout(() => {
+                sounds.match.currentTime = 0;
+                sounds.match.play();
                 
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.lineTo(tx, ty);
-                ctx.strokeStyle = 'transparent';
-                ctx.lineWidth = 4;
-                ctx.globalCompositeOperation = 'destination-out';
-                ctx.stroke();
-            }
-            
-            // Update scratched area
-            scratchedArea += Math.PI * scratchRadius * scratchRadius;
-            const percentage = Math.min(100, Math.round((scratchedArea / totalArea) * 100));
-            
-            // Check if card is revealed
-            if (percentage > 50 && !isRevealed) {
-                isRevealed = true;
-                canvas.style.transition = 'opacity 0.5s ease';
-                canvas.style.opacity = '0';
-                setTimeout(() => {
-                    canvas.style.display = 'none';
-                    checkGameCompletion();
-                }, 500);
-        }
-    }
-    
-    function startDrawing(e) {
-            if (isRevealed) return;
-        e.preventDefault();
-            e.stopPropagation();
-        isDrawing = true;
-            const coords = getCoordinates(e);
-            lastX = coords.x;
-            lastY = coords.y;
-            scratchAtPoint(lastX, lastY);
-    }
-    
-    function draw(e) {
-            if (!isDrawing || isRevealed) return;
-        e.preventDefault();
-            e.stopPropagation();
-            
-            const coords = getCoordinates(e);
-            const x = coords.x;
-            const y = coords.y;
-            
-            // Draw circles along the path
-            const distance = Math.sqrt(Math.pow(x - lastX, 2) + Math.pow(y - lastY, 2));
-            const steps = Math.ceil(distance / 3);
-            
-            for (let i = 0; i <= steps; i++) {
-                const t = i / steps;
-                const currentX = lastX + (x - lastX) * t;
-                const currentY = lastY + (y - lastY) * t;
-                scratchAtPoint(currentX, currentY);
-            }
-        
-        lastX = x;
-        lastY = y;
-    }
-    
-        function stopDrawing(e) {
-            if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            isDrawing = false;
-        }
-        
-        // Prevent double-click from selecting text
-        canvas.addEventListener('dblclick', function(e) {
-        e.preventDefault();
-            e.stopPropagation();
-        });
-        
-        // Event listeners for scratching
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseleave', stopDrawing);
-        
-        // Touch events for mobile
-        canvas.addEventListener('touchstart', startDrawing);
-        canvas.addEventListener('touchmove', draw);
-        canvas.addEventListener('touchend', stopDrawing);
-        
-        // Initialize on load
-        setCanvasSize();
-        
-        // Handle window resize
-        window.addEventListener('resize', setCanvasSize);
-    });
-    
-    function checkGameCompletion() {
-        if (isGameComplete) return;
-        
-        revealedSymbols = Array.from(cards)
-            .filter(card => card.querySelector('.scratch-overlay').style.display === 'none')
-            .map(card => card.querySelector('.symbol').textContent);
-        
-        if (revealedSymbols.length === 3) {
-            isGameComplete = true;
-            if (new Set(revealedSymbols).size === 1) {
-                prizeAmount.textContent = '$5';
-                prizeAmount.style.color = '#2ecc71';
-            } else {
-                prizeAmount.textContent = '$0';
-                prizeAmount.style.color = '#e74c3c';
-            }
-        }
-    }
-    
-    function resetGame() {
-        // Reset game state
-        isGameComplete = false;
-        revealedSymbols = [];
-        prizeAmount.textContent = '$0';
-        prizeAmount.style.color = '#2ecc71';
-        
-        // Reset cards
-        cards.forEach(card => {
-            const canvas = card.querySelector('.scratch-overlay');
-            const symbol = card.querySelector('.symbol');
-            
-            // Reset canvas
-            canvas.style.display = 'block';
-            canvas.style.opacity = '1';
-            
-            // Set random symbol
-            symbol.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-            
-            // Reinitialize scratch card
-            const ctx = canvas.getContext('2d');
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Add scratch texture
-            ctx.fillStyle = '#3498db';
-            for (let i = 0; i < canvas.width; i += 20) {
-                for (let j = 0; j < canvas.height; j += 20) {
-                    ctx.fillRect(i, j, 10, 10);
+                tile1.classList.add('matched');
+                tile2.classList.add('matched');
+                
+                score += 10;
+                scoreDisplay.textContent = score;
+                matchedPairs++;
+                
+                // Check if all pairs are matched
+                if (matchedPairs === 8) {
+                    winGame();
                 }
-            }
-        });
+                
+                selectedTiles = [];
+            }, 500);
+        } else {
+            // No match
+            setTimeout(() => {
+                sounds.wrong.currentTime = 0;
+                sounds.wrong.play();
+                
+                tile1.classList.remove('flipped');
+                tile2.classList.remove('flipped');
+                selectedTiles = [];
+            }, 1000);
+        }
     }
     
-    // Reset button click event
-    resetBtn.addEventListener('click', resetGame);
+    // Start the game
+    function startGame() {
+        if (isGameRunning) return;
+        
+        score = 0;
+        timeLeft = 30;
+        isGameRunning = true;
+        selectedTiles = [];
+        matchedPairs = 0;
+        
+        scoreDisplay.textContent = score;
+        timerDisplay.textContent = timeLeft;
+        prizeAmount.textContent = '$0';
+        
+        startBtn.textContent = 'Restart';
+        initializeBoard();
+        
+        // Update timer display
+        updateTimerVisual();
+        
+        gameInterval = setInterval(() => {
+            timeLeft--;
+            timerDisplay.textContent = timeLeft;
+            
+            // Play tick sound when time is low
+            if (timeLeft <= 5 && timeLeft > 0) {
+                sounds.tick.currentTime = 0;
+                sounds.tick.play();
+            }
+            
+            // Update visual timer
+            updateTimerVisual();
+            
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }, 1000);
+    }
     
-    // Initialize game
-    resetGame();
+    // Update visual timer
+    function updateTimerVisual() {
+        // Remove previous classes
+        document.body.classList.remove('time-low', 'time-critical');
+        
+        // Add warning classes based on time left
+        if (timeLeft <= 10 && timeLeft > 5) {
+            document.body.classList.add('time-low');
+        } else if (timeLeft <= 5) {
+            document.body.classList.add('time-critical');
+        }
+    }
+    
+    // End the game
+    function endGame() {
+        clearInterval(gameInterval);
+        isGameRunning = false;
+        
+        // Show all unmatched tiles
+        document.querySelectorAll('.number-tile:not(.matched)').forEach(tile => {
+            tile.classList.add('flipped');
+        });
+        
+        if (matchedPairs === 8) {
+            prizeAmount.textContent = '$5';
+        } else {
+            startBtn.disabled = false;
+        }
+    }
+    
+    // Win the game
+    function winGame() {
+        clearInterval(gameInterval);
+        isGameRunning = false;
+        
+        sounds.win.currentTime = 0;
+        sounds.win.play();
+        
+        prizeAmount.textContent = '$5';
+        
+        // Add confetti effect
+        addConfetti();
+        
+        setTimeout(() => {
+            alert('Congratulations! You won $5!');
+        }, 500);
+    }
+    
+    // Add confetti effect
+    function addConfetti() {
+        for (let i = 0; i < 150; i++) {
+            createConfetti();
+        }
+    }
+    
+    function createConfetti() {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        
+        const colors = ['#f94144', '#f3722c', '#f8961e', '#f9c74f', '#90be6d', '#43aa8b', '#577590'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        confetti.style.backgroundColor = randomColor;
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        confetti.style.opacity = Math.random();
+        confetti.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
+        
+        document.body.appendChild(confetti);
+        
+        setTimeout(() => {
+            confetti.remove();
+        }, 5000);
+    }
+    
+    // Event listeners
+    startBtn.addEventListener('click', startGame);
 }); 
