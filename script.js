@@ -1,241 +1,198 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const gameBoard = document.getElementById('game-board');
-    const startBtn = document.getElementById('start-btn');
-    const scoreDisplay = document.getElementById('score');
-    const timerDisplay = document.getElementById('timer');
-    const prizeAmount = document.querySelector('.prize-amount');
+    // Elements
+    const scoreEl = document.querySelector('.score');
+    const currentColorEl = document.querySelector('.current-color');
+    const targetZoneEl = document.querySelector('.target-zone');
+    const colorStripEl = document.querySelector('.color-strip');
+    const startBtn = document.querySelector('.start-btn');
+    const prizeAmountEl = document.querySelector('.prize-amount');
+    const gameAreaEl = document.querySelector('.game-area');
     
+    // Game variables
     let score = 0;
-    let timeLeft = 30;
-    let gameInterval;
-    let isGameRunning = false;
-    let selectedTiles = [];
-    let matchedPairs = 0;
+    let targetColor = null;
+    let currentColor = null;
+    let gameActive = false;
+    let colorChangeInterval = null;
+    let colorChangeSpeed = 1000; // ms
+    let animationFrame = null;
+    let colorPosition = 0;
+    let colors = [
+        '#f94144', '#f3722c', '#f8961e', '#f9c74f', 
+        '#90be6d', '#43aa8b', '#577590', '#4361ee'
+    ];
     
-    // Sound effects
-    const sounds = {
-        select: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3'),
-        match: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-game-success-alert-2039.mp3'),
-        win: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3'),
-        wrong: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3'),
-        tick: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-clock-tick-1059.mp3')
-    };
-    
-    // Prepare numbers for the game (pairs of 1-8)
-    function prepareNumbers() {
-        const numbers = [];
-        for (let i = 1; i <= 8; i++) {
-            numbers.push(i, i); // Add each number twice to create pairs
-        }
-        return shuffleArray(numbers);
+    // Initialize color strip
+    function initColorStrip() {
+        colorStripEl.innerHTML = '';
+        colors.forEach(color => {
+            const segment = document.createElement('div');
+            segment.className = 'color-segment';
+            segment.style.backgroundColor = color;
+            colorStripEl.appendChild(segment);
+        });
     }
     
-    // Shuffle array using Fisher-Yates algorithm
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-    
-    // Initialize the game board
-    function initializeBoard() {
-        gameBoard.innerHTML = '';
-        const numbers = prepareNumbers();
-        
-        for (let i = 0; i < 16; i++) {
-            const tile = document.createElement('div');
-            tile.className = 'number-tile';
-            tile.dataset.number = numbers[i];
-            
-            // Create front and back sides for the tile
-            const tileFront = document.createElement('div');
-            tileFront.className = 'tile-front';
-            tileFront.textContent = '?';
-            
-            const tileBack = document.createElement('div');
-            tileBack.className = 'tile-back';
-            tileBack.textContent = numbers[i];
-            
-            tile.appendChild(tileFront);
-            tile.appendChild(tileBack);
-            
-            tile.addEventListener('click', () => handleTileClick(tile));
-            gameBoard.appendChild(tile);
-        }
-    }
-    
-    // Handle tile click
-    function handleTileClick(tile) {
-        if (!isGameRunning || tile.classList.contains('flipped') || 
-            tile.classList.contains('matched') || selectedTiles.length >= 2) return;
-        
-        sounds.select.currentTime = 0;
-        sounds.select.play();
-        
-        // Flip the tile
-        tile.classList.add('flipped');
-        selectedTiles.push(tile);
-        
-        if (selectedTiles.length === 2) {
-            checkMatch();
-        }
-    }
-    
-    // Check if selected tiles match
-    function checkMatch() {
-        const [tile1, tile2] = selectedTiles;
-        const number1 = tile1.dataset.number;
-        const number2 = tile2.dataset.number;
-        
-        if (number1 === number2) {
-            // Match found
-            setTimeout(() => {
-                sounds.match.currentTime = 0;
-                sounds.match.play();
-                
-                tile1.classList.add('matched');
-                tile2.classList.add('matched');
-                
-                score += 10;
-                scoreDisplay.textContent = score;
-                matchedPairs++;
-                
-                // Check if all pairs are matched
-                if (matchedPairs === 8) {
-                    winGame();
-                }
-                
-                selectedTiles = [];
-            }, 500);
-        } else {
-            // No match
-            setTimeout(() => {
-                sounds.wrong.currentTime = 0;
-                sounds.wrong.play();
-                
-                tile1.classList.remove('flipped');
-                tile2.classList.remove('flipped');
-                selectedTiles = [];
-            }, 1000);
-        }
+    // Generate a random color from our palette
+    function getRandomColor() {
+        return colors[Math.floor(Math.random() * colors.length)];
     }
     
     // Start the game
     function startGame() {
-        if (isGameRunning) return;
+        if (gameActive) return;
         
+        // Reset game state
         score = 0;
-        timeLeft = 30;
-        isGameRunning = true;
-        selectedTiles = [];
-        matchedPairs = 0;
+        scoreEl.textContent = score;
+        prizeAmountEl.textContent = '$0';
+        gameActive = true;
+        colorChangeSpeed = 1000;
         
-        scoreDisplay.textContent = score;
-        timerDisplay.textContent = timeLeft;
-        prizeAmount.textContent = '$0';
+        // Update button
+        startBtn.textContent = 'RESET';
         
-        startBtn.textContent = 'Restart';
-        initializeBoard();
+        // Set up target color
+        targetColor = getRandomColor();
+        targetZoneEl.style.backgroundColor = targetColor;
+        targetZoneEl.classList.add('pulse');
         
-        // Update timer display
-        updateTimerVisual();
+        // Initialize the color strip
+        initColorStrip();
         
-        gameInterval = setInterval(() => {
-            timeLeft--;
-            timerDisplay.textContent = timeLeft;
-            
-            // Play tick sound when time is low
-            if (timeLeft <= 5 && timeLeft > 0) {
-                sounds.tick.currentTime = 0;
-                sounds.tick.play();
-            }
-            
-            // Update visual timer
-            updateTimerVisual();
-            
-            if (timeLeft <= 0) {
-                endGame();
-            }
-        }, 1000);
+        // Start color animation
+        startColorAnimation();
     }
     
-    // Update visual timer
-    function updateTimerVisual() {
-        // Remove previous classes
-        document.body.classList.remove('time-low', 'time-critical');
+    // Start color animation
+    function startColorAnimation() {
+        let startTime = null;
+        let lastColorChange = 0;
         
-        // Add warning classes based on time left
-        if (timeLeft <= 10 && timeLeft > 5) {
-            document.body.classList.add('time-low');
-        } else if (timeLeft <= 5) {
-            document.body.classList.add('time-critical');
+        // Animation function
+        function animate(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const elapsed = timestamp - startTime;
+            
+            // Time to change color
+            if (elapsed - lastColorChange >= colorChangeSpeed) {
+                lastColorChange = elapsed;
+                updateCurrentColor();
+            }
+            
+            if (gameActive) {
+                animationFrame = requestAnimationFrame(animate);
+            }
         }
+        
+        // Start the animation
+        animationFrame = requestAnimationFrame(animate);
     }
     
-    // End the game
-    function endGame() {
-        clearInterval(gameInterval);
-        isGameRunning = false;
+    // Update the current color
+    function updateCurrentColor() {
+        colorPosition = (colorPosition + 1) % colors.length;
+        currentColor = colors[colorPosition];
+        currentColorEl.style.backgroundColor = currentColor;
+    }
+    
+    // Handle tap/click on the game area
+    function handleTap() {
+        if (!gameActive) return;
         
-        // Show all unmatched tiles
-        document.querySelectorAll('.number-tile:not(.matched)').forEach(tile => {
-            tile.classList.add('flipped');
-        });
-        
-        if (matchedPairs === 8) {
-            prizeAmount.textContent = '$5';
+        if (currentColor === targetColor) {
+            // Correct match
+            score++;
+            scoreEl.textContent = score;
+            gameAreaEl.classList.add('success-flash');
+            
+            // Increase difficulty
+            colorChangeSpeed = Math.max(300, colorChangeSpeed - 50);
+            
+            // Change target color
+            targetColor = getRandomColor();
+            targetZoneEl.style.backgroundColor = targetColor;
+            
+            // Check win condition
+            if (score >= 25) {
+                winGame();
+            }
+            
+            // Remove flash after animation
+            setTimeout(() => {
+                gameAreaEl.classList.remove('success-flash');
+            }, 500);
         } else {
-            startBtn.disabled = false;
+            // Incorrect match
+            gameAreaEl.classList.add('fail-flash');
+            
+            // Remove flash after animation
+            setTimeout(() => {
+                gameAreaEl.classList.remove('fail-flash');
+            }, 500);
         }
     }
     
     // Win the game
     function winGame() {
-        clearInterval(gameInterval);
-        isGameRunning = false;
+        gameActive = false;
+        prizeAmountEl.textContent = '$5';
+        targetZoneEl.classList.remove('pulse');
         
-        sounds.win.currentTime = 0;
-        sounds.win.play();
+        // Cancel animation
+        cancelAnimationFrame(animationFrame);
         
-        prizeAmount.textContent = '$5';
+        // Add confetti
+        createConfetti();
         
-        // Add confetti effect
-        addConfetti();
-        
-        setTimeout(() => {
-            alert('Congratulations! You won $5!');
-        }, 500);
+        // Reset button
+        startBtn.textContent = 'PLAY AGAIN';
     }
     
-    // Add confetti effect
-    function addConfetti() {
-        for (let i = 0; i < 150; i++) {
-            createConfetti();
-        }
-    }
-    
+    // Create confetti effect
     function createConfetti() {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        
-        const colors = ['#f94144', '#f3722c', '#f8961e', '#f9c74f', '#90be6d', '#43aa8b', '#577590'];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
-        
-        confetti.style.backgroundColor = randomColor;
-        confetti.style.left = Math.random() * 100 + 'vw';
-        confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
-        confetti.style.opacity = Math.random();
-        confetti.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
-        
-        document.body.appendChild(confetti);
-        
-        setTimeout(() => {
-            confetti.remove();
-        }, 5000);
+        for (let i = 0; i < 100; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                
+                // Random color
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                // Random position
+                confetti.style.left = Math.random() * 100 + 'vw';
+                
+                // Random size
+                const size = Math.random() * 8 + 5;
+                confetti.style.width = size + 'px';
+                confetti.style.height = size + 'px';
+                
+                // Random rotation
+                confetti.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
+                
+                // Random animation duration
+                confetti.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                
+                document.body.appendChild(confetti);
+                
+                // Remove after animation completes
+                setTimeout(() => {
+                    confetti.remove();
+                }, 3000);
+            }, i * 20);
+        }
     }
     
     // Event listeners
     startBtn.addEventListener('click', startGame);
+    gameAreaEl.addEventListener('click', handleTap);
+    
+    // Touch events for mobile
+    gameAreaEl.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        handleTap();
+    });
+    
+    // Initialize color strip on load
+    initColorStrip();
 }); 

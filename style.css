@@ -2,17 +2,27 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    user-select: none;
+}
+
+:root {
+    --primary: #4361ee;
+    --success: #4cc9f0;
+    --danger: #f72585;
+    --dark: #232946;
+    --light: #f8f9fa;
+    --background: #121212;
 }
 
 body {
-    background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+    background-color: var(--background);
+    color: var(--light);
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
-    transition: background 0.5s ease;
+    overflow: hidden;
 }
 
 /* Timer warning states */
@@ -31,93 +41,86 @@ body.time-critical {
 }
 
 .container {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    padding: 30px;
-    max-width: 800px;
     width: 100%;
-}
-
-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-h1 {
-    color: #2c3e50;
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-}
-
-.tagline {
-    color: #7f8c8d;
-    font-size: 1.2rem;
-}
-
-.game-container {
-    background: #f8f9fa;
-    border-radius: 15px;
+    max-width: 500px;
     padding: 20px;
-    margin-bottom: 20px;
 }
 
-.game-info {
+.game-wrapper {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 24px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.score-container {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
+}
+
+.score {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.target {
     font-size: 1.2rem;
-    color: #2c3e50;
+    color: rgba(255, 255, 255, 0.7);
 }
 
-.game-board {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
-    perspective: 1000px; /* 3D perspective for card flips */
-}
-
-.number-tile {
-    aspect-ratio: 1;
+.game-area {
+    height: 200px;
     position: relative;
-    cursor: pointer;
-    transform-style: preserve-3d;
-    transition: transform 0.6s;
-    user-select: none;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.2);
+    margin-bottom: 20px;
 }
 
-.number-tile.flipped {
-    transform: rotateY(180deg);
-}
-
-.number-tile.matched {
-    transform: rotateY(180deg) scale(0.95);
-    box-shadow: 0 0 15px rgba(46, 204, 113, 0.8);
-}
-
-.tile-front, .tile-back {
+.current-color {
     position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    border-radius: 10px;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.target-zone {
+    position: absolute;
+    bottom: 35px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: transparent;
+    border: 2px dashed white;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 2rem;
-    transition: all 0.3s ease;
 }
 
-.tile-front {
-    background: #3498db;
-    color: white;
+.color-strip {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 15px;
+    display: flex;
 }
 
-.tile-back {
-    background: #2ecc71;
-    color: white;
-    transform: rotateY(180deg);
+.color-segment {
+    height: 100%;
+    flex-grow: 1;
+    transition: opacity 0.3s ease;
 }
 
 .controls {
@@ -126,93 +129,134 @@ h1 {
     align-items: center;
 }
 
-#start-btn {
-    background: #2ecc71;
+.start-btn {
+    background-color: var(--primary);
     color: white;
     border: none;
     padding: 12px 24px;
     border-radius: 8px;
-    font-size: 1.1rem;
+    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    letter-spacing: 1px;
 }
 
-#start-btn:hover {
-    background: #27ae60;
+.start-btn:hover {
     transform: translateY(-2px);
+    background-color: #3051db;
 }
 
-#start-btn:disabled {
-    background: #95a5a6;
-    transform: none;
-    cursor: not-allowed;
+.start-btn:active {
+    transform: translateY(0);
 }
 
-.prize-display {
+.prize {
+    background: linear-gradient(135deg, #4cc9f0, #4361ee, #3a0ca3);
+    padding: 12px 20px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
-    gap: 10px;
-}
-
-.prize-label {
-    color: #7f8c8d;
-    font-size: 1.1rem;
+    justify-content: center;
 }
 
 .prize-amount {
-    color: #2ecc71;
     font-size: 1.5rem;
-    font-weight: bold;
-    transition: all 0.3s ease;
+    font-weight: 700;
+    background: linear-gradient(90deg, #f7ff00, #db36a4);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-footer {
+.instructions {
+    margin-top: 24px;
     text-align: center;
-    color: #7f8c8d;
-    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.6;
 }
 
-/* Confetti animation */
+.pulse {
+    animation: pulse 0.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
+.success-flash {
+    animation: success-flash 0.5s;
+}
+
+.fail-flash {
+    animation: fail-flash 0.5s;
+}
+
+@keyframes success-flash {
+    0%, 100% {
+        background-color: transparent;
+    }
+    50% {
+        background-color: rgba(76, 201, 240, 0.3);
+    }
+}
+
+@keyframes fail-flash {
+    0%, 100% {
+        background-color: transparent;
+    }
+    50% {
+        background-color: rgba(247, 37, 133, 0.3);
+    }
+}
+
 .confetti {
     position: fixed;
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     top: -10px;
     border-radius: 0;
-    animation: fall 5s linear forwards;
+    animation: fall 3s linear forwards;
     z-index: 1000;
 }
 
 @keyframes fall {
     to {
-        transform: translateY(100vh) rotate(360deg);
+        transform: translateY(100vh) rotate(720deg);
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 500px) {
     .container {
-        padding: 15px;
+        padding: 10px;
     }
     
-    h1 {
+    .game-wrapper {
+        padding: 16px;
+    }
+    
+    .score {
         font-size: 2rem;
     }
     
-    .game-board {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 5px;
+    .game-area {
+        height: 180px;
     }
     
-    .tile-front, .tile-back {
-        font-size: 1.5rem;
+    .current-color {
+        width: 70px;
+        height: 70px;
     }
     
-    #start-btn {
-        padding: 10px 16px;
-        font-size: 1rem;
-    }
-    
-    .prize-amount {
-        font-size: 1.3rem;
+    .target-zone {
+        width: 50px;
+        height: 50px;
     }
 } 

@@ -3,43 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Win 5 Bucks!</title>
+    <title>Color Rush | Win $5</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Win 5 Bucks!</h1>
-            <p class="tagline">Match the numbers to win $5! 🎮</p>
-        </header>
-        
-        <main>
-            <div class="game-container">
-                <div class="game-info">
-                    <div class="score">Score: <span id="score">0</span></div>
-                    <div class="timer">Time: <span id="timer">30</span>s</div>
-                </div>
-                
-                <div class="game-board" id="game-board">
-                    <!-- Numbers will be generated here -->
-                </div>
-                
-                <div class="controls">
-                    <button id="start-btn">Start Game</button>
-                    <div class="prize-display">
-                        <span class="prize-label">Prize:</span>
-                        <span class="prize-amount">$0</span>
-                    </div>
+        <div class="game-wrapper">
+            <div class="score-container">
+                <div class="score">0</div>
+                <div class="target">Target: 25</div>
+            </div>
+            
+            <div class="game-area">
+                <div class="current-color"></div>
+                <div class="target-zone"></div>
+                <div class="color-strip"></div>
+            </div>
+            
+            <div class="controls">
+                <button class="start-btn">START</button>
+                <div class="prize">
+                    <span class="prize-amount">$0</span>
                 </div>
             </div>
-        </main>
-
-        <footer>
-            <p>&copy; 2024 Win5Bucks.com - For entertainment purposes only</p>
-        </footer>
+        </div>
+        
+        <div class="instructions">
+            <p>Tap when the moving color matches the target color to score points</p>
+            <p>Score 25 points to win $5!</p>
+        </div>
     </div>
-
+    
     <script src="script.js"></script>
 </body>
 </html> 
