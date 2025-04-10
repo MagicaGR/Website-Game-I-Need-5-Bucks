@@ -1166,35 +1166,40 @@ body {
 /* Modern double jump indicator */
 .double-jump-status {
     display: flex;
-    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 15px;
 }
 
 .double-jump-indicator {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 8px 15px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px 20px;
     border-radius: 30px;
     backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 10px var(--accent-primary);
     transition: all 0.3s ease;
+    max-width: 200px;
+    margin: 0 auto;
 }
 
 .double-jump-indicator span {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 15px;
+    font-weight: 600;
     color: var(--text-primary);
     letter-spacing: 0.5px;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
 }
 
 .double-jump-available {
-    width: 12px;
-    height: 12px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--success), #00ffaa);
-    box-shadow: 0 0 10px var(--success);
+    box-shadow: 0 0 15px var(--success);
     position: relative;
     transition: all 0.3s ease;
 }
@@ -1202,21 +1207,22 @@ body {
 .double-jump-available:after {
     content: '';
     position: absolute;
-    top: -4px;
-    left: -4px;
-    right: -4px;
-    bottom: -4px;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
     border-radius: 50%;
-    border: 1px solid var(--success);
+    border: 2px solid var(--success);
     opacity: 0.5;
     animation: pulse 1.5s infinite;
 }
 
 .double-jump-used {
-    width: 12px;
-    height: 12px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #666, #444);
+    background: linear-gradient(135deg, #888, #444);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
     transition: all 0.3s ease;
 }
 
