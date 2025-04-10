@@ -3,37 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Color Rush | Win $5</title>
+    <title>Jumper | Win $5</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="game-wrapper">
-            <div class="score-container">
-                <div class="score">0</div>
-                <div class="target">Target: 25</div>
-            </div>
-            
-            <div class="game-area">
-                <div class="current-color"></div>
-                <div class="target-zone"></div>
-                <div class="color-strip"></div>
-            </div>
-            
-            <div class="controls">
-                <button class="start-btn">START</button>
-                <div class="prize">
-                    <span class="prize-amount">$0</span>
-                </div>
-            </div>
+    <div class="game-container">
+        <div class="score-display">Score: <span id="score">0</span></div>
+        <div class="game-area">
+            <div class="player"></div>
+            <div class="ground"></div>
+            <div class="prize-display">Prize: <span id="prize">$0</span></div>
         </div>
-        
+        <button id="start-button">START</button>
         <div class="instructions">
-            <p>Tap when the moving color matches the target color to score points</p>
-            <p>Score 25 points to win $5!</p>
+            <p>Press SPACE or tap to jump over obstacles</p>
+            <p>Score 50 points to win $5!</p>
         </div>
     </div>
-    
     <script src="script.js"></script>
 </body>
 </html> 
