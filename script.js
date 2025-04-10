@@ -1,101 +1,59 @@
-// Ensure script runs after DOM is fully loaded
-window.onload = function() {
-    console.log('Window loaded, initializing game...');
+// Wait for all content to load before starting
+window.addEventListener('load', function() {
+    // Get DOM elements
+    const player = document.getElementById('player');
+    const gameArea = document.querySelector('.game-area');
+    const startBtn = document.getElementById('start-btn');
+    const scoreElement = document.getElementById('score');
+    const prizeElement = document.getElementById('prize');
     
-    // Safely get DOM elements with error handling
-    function getElement(selector, fallback = null) {
-        const element = document.querySelector(selector);
-        if (!element) {
-            console.error(`Element not found: ${selector}`);
-            return fallback;
-        }
-        return element;
-    }
-    
-    function getElementById(id, fallback = null) {
-        const element = document.getElementById(id);
-        if (!element) {
-            console.error(`Element with ID not found: ${id}`);
-            return fallback;
-        }
-        return element;
-    }
-    
-    // Game elements
-    const player = getElement('.player');
-    const gameArea = getElement('.game-area');
-    const ground = getElement('.ground');
-    const startButton = getElementById('start-button');
-    const scoreDisplay = getElementById('score');
-    const prizeDisplay = getElementById('prize');
-    
-    // Log elements to verify they're found
-    console.log('Player element:', player);
-    console.log('Game area element:', gameArea);
-    console.log('Start button element:', startButton);
-    console.log('Score display:', scoreDisplay);
-    console.log('Prize display:', prizeDisplay);
-    
-    // Check if all required elements exist
-    if (!player || !gameArea || !ground || !startButton || !scoreDisplay || !prizeDisplay) {
-        console.error('Missing required game elements. Game cannot start.');
-        return; // Exit early if elements are missing
-    }
-    
-    // Game variables
-    let isGameRunning = false;
+    // Game state
+    let isPlaying = false;
     let score = 0;
-    let speed = 1.5; // Initial obstacle speed in seconds
-    let obstacleTimer;
-    let scoreTimer;
+    let obstacleSpeed = 2; // seconds
+    let obstacleInterval;
+    let scoreInterval;
     let isJumping = false;
     
-    // Obstacle types and their frequencies (higher = more common)
-    const obstacleTypes = [
-        { class: 'obstacle', frequency: 5 },          // Standard obstacle
-        { class: 'obstacle tall-obstacle', frequency: 2 },  // Tall obstacle
-        { class: 'obstacle short-obstacle', frequency: 3 },  // Short obstacle
-        { class: 'obstacle wide-obstacle', frequency: 2 }   // Wide obstacle
-    ];
-    
-    // Toggle game state
-    function toggleGame() {
-        console.log('Toggle game called, current state:', isGameRunning);
-        if (isGameRunning) {
-            endGame();
-        } else {
-            startGame();
-        }
+    // Initialize game
+    function init() {
+        // Reset game state
+        score = 0;
+        isPlaying = false;
+        obstacleSpeed = 2;
+        scoreElement.textContent = '0';
+        prizeElement.textContent = '$0';
+        
+        // Remove any existing obstacles
+        document.querySelectorAll('.obstacle').forEach(obs => obs.remove());
+        
+        // Add event listeners
+        document.addEventListener('keydown', handleJump);
+        gameArea.addEventListener('touchstart', handleJump);
+        startBtn.addEventListener('click', startGame);
     }
     
     // Start the game
     function startGame() {
-        console.log('Starting game');
-        isGameRunning = true;
-        score = 0;
-        speed = 1.5;
+        if (isPlaying) return;
         
-        if (scoreDisplay) scoreDisplay.textContent = '0';
-        if (prizeDisplay) prizeDisplay.textContent = '$0';
-        if (startButton) startButton.textContent = 'STOP';
-        
-        // Clear any existing obstacles
-        document.querySelectorAll('.obstacle').forEach(obstacle => {
-            obstacle.remove();
-        });
+        isPlaying = true;
+        startBtn.textContent = 'PLAYING...';
+        startBtn.disabled = true;
         
         // Start creating obstacles
-        obstacleTimer = setInterval(createObstacle, getRandomTime(1200, 2500));
+        createObstacleInterval();
         
         // Start score counter
-        scoreTimer = setInterval(() => {
-            if (isGameRunning) {
+        scoreInterval = setInterval(() => {
+            if (isPlaying) {
                 score++;
-                if (scoreDisplay) scoreDisplay.textContent = score;
+                scoreElement.textContent = score;
                 
-                // Increase speed as score increases
-                if (score % 10 === 0) {
-                    speed = Math.max(0.7, speed - 0.1);
+                // Increase difficulty
+                if (score % 10 === 0 && score > 0) {
+                    obstacleSpeed = Math.max(1, obstacleSpeed - 0.2);
+                    createObstacleInterval(); // Refresh interval with new speed
                 }
                 
                 // Win condition
@@ -106,191 +64,165 @@ window.onload = function() {
         }, 1000);
     }
     
-    // Create a new obstacle
-    function createObstacle() {
-        if (!isGameRunning || !gameArea) return;
+    // Create obstacles at intervals
+    function createObstacleInterval() {
+        // Clear any existing interval
+        if (obstacleInterval) {
+            clearInterval(obstacleInterval);
+        }
         
-        // Select obstacle type based on frequency
-        const obstacleType = getWeightedRandomObstacle();
+        // Set new interval
+        obstacleInterval = setInterval(createObstacle, 1500);
+    }
+    
+    // Create a single obstacle
+    function createObstacle() {
+        if (!isPlaying) return;
         
         const obstacle = document.createElement('div');
-        obstacle.className = obstacleType.class;
+        obstacle.className = 'obstacle';
         
         // Set animation duration based on current speed
-        obstacle.style.animationDuration = speed + 's';
+        obstacle.style.animationDuration = obstacleSpeed + 's';
         
         gameArea.appendChild(obstacle);
         
-        // Remove obstacle after animation completes
-        setTimeout(() => {
-            if (obstacle.parentElement) {
-                obstacle.remove();
-            }
-        }, speed * 1000);
-        
-        // Check for collisions
-        const checkCollision = setInterval(() => {
-            if (!player || !obstacle.parentElement) {
-                clearInterval(checkCollision);
+        // Check for collision
+        const collisionCheck = setInterval(() => {
+            if (!isPlaying) {
+                clearInterval(collisionCheck);
                 return;
             }
             
             if (isColliding(player, obstacle)) {
-                clearInterval(checkCollision);
+                clearInterval(collisionCheck);
                 endGame();
             }
             
-            // If obstacle has passed the player without collision, clear the interval
-            if (getObstaclePosition(obstacle) > player.offsetLeft + player.offsetWidth) {
-                clearInterval(checkCollision);
+            // Remove check once obstacle has passed
+            const obstacleRect = obstacle.getBoundingClientRect();
+            const playerRect = player.getBoundingClientRect();
+            
+            if (obstacleRect.right < playerRect.left) {
+                clearInterval(collisionCheck);
+            }
+            
+            // Remove obstacle when it's off-screen
+            if (obstacleRect.right < 0) {
+                if (obstacle.parentElement) {
+                    obstacle.remove();
+                }
+                clearInterval(collisionCheck);
             }
         }, 10);
-        
-        // Adjust obstacle timing based on current speed
-        clearInterval(obstacleTimer);
-        obstacleTimer = setInterval(createObstacle, getRandomTime(1000 * speed, 2000 * speed));
     }
     
     // Handle jump action
-    function jump(event) {
-        // Only allow jump on space key, touchstart, or click events
-        if (!player || 
-            (event.type === 'keydown' && event.code !== 'Space') || 
-            !isGameRunning || 
-            isJumping
-        ) {
-            return;
-        }
+    function handleJump(event) {
+        // Only jump if game is playing and not already jumping
+        if (!isPlaying || isJumping) return;
+        
+        // Only jump on spacebar for keyboard events
+        if (event.type === 'keydown' && event.code !== 'Space') return;
         
         isJumping = true;
-        player.classList.add('jumping');
+        player.classList.add('jump');
         
-        // Create particle effects
-        createJumpParticles();
+        // Create jump particles
+        createParticles();
         
-        // Remove jumping class after animation completes
+        // Remove jump class when animation completes
         setTimeout(() => {
-            if (player) {
-                player.classList.remove('jumping');
-                isJumping = false;
-            }
+            player.classList.remove('jump');
+            isJumping = false;
         }, 500);
     }
     
-    // Create particle effects for jump
-    function createJumpParticles() {
-        if (!player || !ground || !gameArea) return;
-        
-        for (let i = 0; i < 8; i++) {
+    // Create particle effect when jumping
+    function createParticles() {
+        for (let i = 0; i < 5; i++) {
             const particle = document.createElement('div');
             particle.className = 'particle';
             
-            // Random color from player or ground
-            try {
-                const colors = [
-                    getComputedStyle(player).backgroundColor,
-                    getComputedStyle(ground).backgroundColor
-                ];
-                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            } catch (e) {
-                console.error('Error setting particle color:', e);
-                particle.style.backgroundColor = '#fff';
-            }
+            // Position particles at player's feet
+            const playerRect = player.getBoundingClientRect();
+            const gameRect = gameArea.getBoundingClientRect();
             
-            // Position at player's feet
-            particle.style.left = (player.offsetLeft + player.offsetWidth / 2) + 'px';
-            particle.style.bottom = ground.offsetHeight + 'px';
+            particle.style.left = (playerRect.left + playerRect.width/2 - gameRect.left) + 'px';
+            particle.style.bottom = '20px'; // Same as player bottom
             
-            // Random horizontal movement
-            const tx = (Math.random() - 0.5) * 50;
+            // Random horizontal and vertical movement
+            const tx = (Math.random() - 0.5) * 30;
+            const ty = Math.random() * 10 + 10;
             particle.style.setProperty('--tx', tx + 'px');
+            particle.style.setProperty('--ty', ty + 'px');
             
             gameArea.appendChild(particle);
             
-            // Remove particle after animation
+            // Remove particle after animation ends
             setTimeout(() => {
                 if (particle.parentElement) {
                     particle.remove();
                 }
-            }, 1000);
+            }, 500);
         }
     }
     
     // Check if two elements are colliding
     function isColliding(element1, element2) {
-        try {
-            const rect1 = element1.getBoundingClientRect();
-            const rect2 = element2.getBoundingClientRect();
-            
-            return !(
-                rect1.right < rect2.left + 10 || 
-                rect1.left > rect2.right - 10 || 
-                rect1.bottom < rect2.top + 10 || 
-                rect1.top > rect2.bottom - 10
-            );
-        } catch (e) {
-            console.error('Error checking collision:', e);
-            return false;
-        }
-    }
-    
-    // Get the horizontal position of an obstacle relative to the game area
-    function getObstaclePosition(obstacle) {
-        try {
-            if (!gameArea) return 0;
-            const gameAreaRect = gameArea.getBoundingClientRect();
-            const obstacleRect = obstacle.getBoundingClientRect();
-            return gameAreaRect.right - obstacleRect.right;
-        } catch (e) {
-            console.error('Error getting obstacle position:', e);
-            return 0;
-        }
+        const rect1 = element1.getBoundingClientRect();
+        const rect2 = element2.getBoundingClientRect();
+        
+        return !(
+            rect1.right < rect2.left || 
+            rect1.left > rect2.right || 
+            rect1.bottom < rect2.top || 
+            rect1.top > rect2.bottom
+        );
     }
     
     // End the game
     function endGame() {
-        isGameRunning = false;
-        clearInterval(obstacleTimer);
-        clearInterval(scoreTimer);
-        if (startButton) startButton.textContent = 'START';
+        isPlaying = false;
+        clearInterval(obstacleInterval);
+        clearInterval(scoreInterval);
         
-        // Stop all obstacle animations
+        startBtn.textContent = 'PLAY AGAIN';
+        startBtn.disabled = false;
+        
+        // Stop obstacle animations
         document.querySelectorAll('.obstacle').forEach(obstacle => {
-            try {
-                const currentPos = window.getComputedStyle(obstacle).right;
-                obstacle.style.right = currentPos;
-                obstacle.style.animation = 'none';
-            } catch (e) {
-                console.error('Error stopping obstacle animation:', e);
-            }
+            const currentPos = window.getComputedStyle(obstacle).right;
+            obstacle.style.animationPlayState = 'paused';
         });
     }
     
     // Win the game
     function winGame() {
-        endGame();
-        if (prizeDisplay) prizeDisplay.textContent = '$5';
+        isPlaying = false;
+        clearInterval(obstacleInterval);
+        clearInterval(scoreInterval);
+        
+        prizeElement.textContent = '$5';
+        startBtn.textContent = 'YOU WIN! PLAY AGAIN';
+        startBtn.disabled = false;
         
         // Create celebration particles
-        if (!gameArea) return;
-        
-        for (let i = 0; i < 50; i++) {
+        for (let i = 0; i < 30; i++) {
             setTimeout(() => {
-                if (!gameArea) return;
-                
                 const particle = document.createElement('div');
                 particle.className = 'particle';
-                
-                // Gold color for win
                 particle.style.backgroundColor = 'gold';
                 
-                // Random position at top of game area
-                particle.style.left = Math.random() * gameArea.offsetWidth + 'px';
-                particle.style.top = '0';
+                // Random position in game area
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
                 
-                // Random horizontal movement
-                const tx = (Math.random() - 0.5) * 100;
+                // Random movement
+                const tx = (Math.random() - 0.5) * 40;
+                const ty = (Math.random() - 0.5) * 40;
                 particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
                 
                 gameArea.appendChild(particle);
                 
@@ -299,45 +231,11 @@ window.onload = function() {
                     if (particle.parentElement) {
                         particle.remove();
                     }
-                }, 1000);
+                }, 500);
             }, i * 50);
         }
     }
     
-    // Helper function to get random time between min and max
-    function getRandomTime(min, max) {
-        return Math.floor(Math.random() * (max - min + 1) + min);
-    }
-    
-    // Helper function to get random obstacle type based on frequency
-    function getWeightedRandomObstacle() {
-        // Calculate total frequency
-        const totalFrequency = obstacleTypes.reduce((sum, type) => sum + type.frequency, 0);
-        
-        // Get random value within total frequency range
-        const random = Math.random() * totalFrequency;
-        
-        // Find the obstacle type for the random value
-        let cumulativeFrequency = 0;
-        for (let i = 0; i < obstacleTypes.length; i++) {
-            cumulativeFrequency += obstacleTypes[i].frequency;
-            if (random < cumulativeFrequency) {
-                return obstacleTypes[i];
-            }
-        }
-        
-        // Fallback to first obstacle type
-        return obstacleTypes[0];
-    }
-    
-    // Add event listeners
-    console.log('Adding event listeners');
-    document.addEventListener('keydown', jump);
-    if (gameArea) gameArea.addEventListener('touchstart', jump);
-    if (startButton) {
-        startButton.addEventListener('click', toggleGame);
-        console.log('Start button listener added');
-    } else {
-        console.error('Start button not found!');
-    }
-}; 
+    // Initialize the game
+    init();
+}); 

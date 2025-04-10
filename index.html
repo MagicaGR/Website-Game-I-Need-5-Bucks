@@ -3,24 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jumper | Win $5</title>
+    <title>Jump Game | Win $5</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div class="game-container">
-        <div class="score-display">Score: <span id="score">0</span></div>
-        <div class="game-area">
-            <div class="player"></div>
-            <div class="ground"></div>
-            <div class="prize-display">Prize: <span id="prize">$0</span></div>
+        <div class="header">
+            <div class="score">Score: <span id="score">0</span></div>
+            <div class="prize">Prize: <span id="prize">$0</span></div>
         </div>
-        <button id="start-button">START</button>
+        
+        <div class="game-area">
+            <div id="player"></div>
+            <div id="ground"></div>
+        </div>
+        
+        <button id="start-btn">START</button>
+        
         <div class="instructions">
-            <p>Press SPACE or tap to jump over obstacles</p>
-            <p>Score 50 points to win $5!</p>
+            <p>Press SPACE or tap screen to jump</p>
+            <p>Reach 50 points to win $5!</p>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html> 
