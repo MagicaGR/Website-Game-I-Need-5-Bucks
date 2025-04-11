@@ -1227,13 +1227,13 @@ body {
 }
 
 .footer a {
-    color: var(--accent-primary);
+    color: var(--text-primary);
     text-decoration: none;
     transition: color 0.3s;
 }
 
 .footer a:hover {
-    color: var(--accent-secondary);
+    color: var(--accent-primary);
     text-decoration: underline;
 }
 
