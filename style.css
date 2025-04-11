@@ -39,14 +39,13 @@ body {
     color: var(--text-primary);
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    overflow-y: auto;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
     background-attachment: fixed;
     position: relative;
-    padding: 20px 0;
     margin: 0;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Noise texture overlay */
@@ -82,18 +81,18 @@ body {
 
 .overlay-content {
     text-align: center;
-    padding: 40px;
+    padding: 25px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    max-width: 500px;
+    max-width: 450px;
     width: 90%;
 }
 
 .overlay-content h1 {
-    font-size: 4rem;
-    margin-bottom: 20px;
+    font-size: 3.5rem;
+    margin-bottom: 15px;
     background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
     -webkit-background-clip: text;
     background-clip: text;
@@ -102,8 +101,8 @@ body {
 }
 
 .overlay-content h2 {
-    font-size: 2.5rem;
-    margin-bottom: 30px;
+    font-size: 2.2rem;
+    margin-bottom: 20px;
     color: var(--accent-primary);
 }
 
@@ -114,14 +113,14 @@ body {
 }
 
 .overlay-content .disclaimer {
-    font-size: 0.9rem;
-    margin-bottom: 30px;
+    font-size: 0.8rem;
+    margin-bottom: 20px;
     color: var(--warning);
     font-style: italic;
     background-color: rgba(0, 0, 0, 0.2);
-    padding: 8px 15px;
+    padding: 6px 12px;
     border-radius: 8px;
-    max-width: 80%;
+    max-width: 90%;
     margin-left: auto;
     margin-right: auto;
 }
@@ -130,12 +129,12 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 15px;
     text-align: left;
 }
 
 .settings-group label {
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: var(--text-primary);
 }
 
@@ -205,13 +204,13 @@ body {
     background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
     color: white;
     border: none;
-    padding: 16px 40px;
-    font-size: 1.2rem;
+    padding: 12px 30px;
+    font-size: 1.1rem;
     font-weight: 700;
     border-radius: var(--border-radius);
     cursor: pointer;
     letter-spacing: 2px;
-    margin: 20px 0;
+    margin: 15px 0;
     position: relative;
     overflow: hidden;
     transition: all 0.3s;
@@ -289,33 +288,42 @@ body {
 
 .game-container {
     width: 100%;
-    max-width: 650px;
-    text-align: center;
-    padding: 25px;
+    max-width: 800px;
+    background: rgba(26, 26, 46, 0.4);
+    border-radius: var(--border-radius);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow);
+    overflow: hidden;
     position: relative;
     z-index: 2;
-    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    height: 95vh;
+    margin: 1vh auto;
 }
 
 .header {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
-    font-weight: 700;
+    justify-content: space-around;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 3;
 }
 
 .score-card, .streak-card, .prize-card {
-    background: var(--blur-bg);
-    backdrop-filter: blur(10px);
-    border-radius: var(--border-radius);
-    padding: 15px 25px;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--shadow);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    min-width: 100px;
+    align-items: center;
+    margin: 0 5px;
     position: relative;
-    overflow: hidden;
+    min-width: 80px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .score-card:after, .streak-card:after, .prize-card:after {
@@ -366,16 +374,15 @@ body {
 
 /* Game area with enhanced effects */
 .game-area {
-    width: 100%;
-    height: 350px;
-    background: var(--bg-secondary);
     position: relative;
+    width: 100%;
+    flex-grow: 1;
+    background: linear-gradient(to bottom, 
+        rgba(67, 97, 238, 0.1), 
+        rgba(76, 201, 240, 0.05)
+    );
     overflow: hidden;
-    border-radius: var(--border-radius);
-    margin-bottom: 25px;
-    box-shadow: var(--shadow), inset 0 0 30px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .game-area:hover {
@@ -670,21 +677,18 @@ body {
 }
 
 #start-btn {
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-    color: white;
+    background: linear-gradient(135deg, var(--accent-secondary), var(--accent-tertiary));
+    padding: 8px 25px;
+    border-radius: 30px;
     border: none;
-    padding: 12px 30px;
-    font-size: 18px;
+    color: var(--text-primary);
     font-weight: 700;
-    border-radius: var(--border-radius);
+    font-size: 1rem;
     cursor: pointer;
+    box-shadow: 0 0 15px rgba(67, 97, 238, 0.5);
     transition: all 0.3s;
-    box-shadow: 0 8px 20px rgba(76, 201, 240, 0.4);
-    text-transform: uppercase;
-    letter-spacing: 1px;
     position: relative;
     overflow: hidden;
-    z-index: 1;
 }
 
 #start-btn:before {
@@ -721,16 +725,16 @@ body {
 }
 
 .instructions {
-    color: var(--text-secondary);
-    line-height: 1.8;
-    font-size: 16px;
-    max-width: 450px;
-    margin: 0 auto 30px;
+    padding: 10px 15px;
+    text-align: center;
     background: rgba(0, 0, 0, 0.2);
-    padding: 15px 20px;
-    border-radius: var(--border-radius);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.instructions p {
+    margin: 5px 0;
 }
 
 .key {
@@ -902,66 +906,40 @@ body {
 }
 
 /* Mobile adjustments */
-@media (max-width: 700px) {
-    body {
-        padding: 10px 0;
+@media (max-width: 480px) {
+    html, body {
+        overflow: hidden;
+        height: 100%;
+        width: 100%;
     }
     
-    .game-area {
-        height: 250px;
+    body {
+        padding: 0;
+    }
+    
+    .game-container {
+        border-radius: 0;
+        height: 100vh;
+        margin: 0;
     }
     
     .header {
-        font-size: 14px;
-    }
-    
-    .score-card, .streak-card, .prize-card {
-        padding: 8px 12px;
-        min-width: 80px;
-    }
-    
-    #score, #streak, #prize {
-        font-size: 22px;
-    }
-    
-    .overlay-content h1 {
-        font-size: 2.5rem;
-    }
-    
-    .overlay-content h2 {
-        font-size: 1.8rem;
-    }
-    
-    .overlay-content {
-        padding: 25px;
-    }
-    
-    .game-panel {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .double-jump-status {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .controls {
-        width: 100%;
-    }
-    
-    #start-btn {
-        flex: 1;
+        padding: 5px;
     }
     
     .instructions {
-        margin-bottom: 20px;
-        font-size: 14px;
-        padding: 12px 15px;
+        padding: 5px;
+        font-size: 0.8rem;
     }
     
     .footer {
-        margin-top: 15px;
+        padding: 3px 0;
+        font-size: 0.7rem;
+    }
+    
+    .score-card, .streak-card, .prize-card {
+        padding: 5px 10px;
+        min-width: 70px;
     }
 }
 
@@ -1139,16 +1117,10 @@ body {
 /* Game panel with controls and indicators */
 .game-panel {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    margin-bottom: 25px;
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(10px);
-    border-radius: var(--border-radius);
-    padding: 15px 20px;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    flex-wrap: wrap;
+    padding: 8px 0;
+    gap: 15px;
 }
 
 .controls {
@@ -1165,13 +1137,11 @@ body {
 
 /* Modern double jump indicator with fixed position */
 .floating-indicator {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 5;
+    pointer-events: none;
 }
 
 .double-jump-indicator {
@@ -1246,19 +1216,14 @@ body {
 
 /* Footer */
 .footer {
-    margin-top: 20px;
-    margin-bottom: 10px;
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 10px;
-    font-size: 0.9rem;
+    align-items: center;
+    font-size: 0.8rem;
     color: var(--text-secondary);
-    background: rgba(0, 0, 0, 0.2);
-    padding: 12px;
-    border-radius: var(--border-radius);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 5px 0;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .footer a {
@@ -1304,18 +1269,43 @@ body {
     100% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
 }
 
-/* Fix scrolling on mobile */
-@media (max-width: 480px) {
-    html, body {
-        height: auto;
-        overflow-x: hidden;
-    }
-    
-    body {
-        padding: 10px;
-    }
-    
-    .game-container {
+/* Ensure the game always fits small screens */
+@media (max-height: 700px) {
+    .overlay-content {
         padding: 15px;
+    }
+    
+    .overlay-content h1 {
+        font-size: 3rem;
+        margin-bottom: 10px;
+    }
+    
+    .overlay-content h2 {
+        font-size: 2rem;
+        margin-bottom: 15px;
+    }
+    
+    .overlay-content .disclaimer {
+        font-size: 0.7rem;
+        margin-bottom: 15px;
+        padding: 5px 10px;
+    }
+    
+    .glow-btn {
+        padding: 8px 20px;
+        font-size: 1rem;
+        margin: 10px 0;
+    }
+    
+    .settings-group {
+        margin-bottom: 10px;
+    }
+    
+    .settings-group label {
+        font-size: 0.9rem;
+    }
+    
+    .game-area {
+        min-height: 200px; /* Ensure minimum height */
     }
 } 
